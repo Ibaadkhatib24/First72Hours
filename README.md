@@ -120,7 +120,7 @@ A caregiver might be 19 or 79, on a cracked phone in a hospital hallway. So the 
 | **Hire help** | Paid options, and whether they can start in time |
 | **Next week** | Things to start now for after the 72 hours |
 
-Click Helpers and you only see helpers. Every page has a "Home" link at the top, the browser's back button works, and the tabs show counts (open flags, gaps in the schedule, tasks left). A **Bigger text** button in the top bar makes everything larger, plain words replace jargon, and on a phone the top buttons keep their labels instead of turning into mystery icons.
+Click Helpers and you only see helpers. Every page has a "Home" link at the top, the browser's back button works, and the tabs show counts (open flags, gaps in the schedule, tasks left). A **Bigger text** button in the top bar makes everything larger, **New plan** starts one for someone else (it asks first and offers to save the current plan's link), plain words replace jargon, and on a phone the top buttons keep their labels instead of turning into mystery icons.
 
 <img src="docs/screenshots/mobile.png" alt="The plan home page on a phone" width="320">
 

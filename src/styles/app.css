@@ -2098,6 +2098,12 @@ textarea.input {
   font-size: 15px;
 }
 
+.sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .sheet-people {
   list-style: none;
   margin: 0;
@@ -2901,6 +2907,11 @@ textarea.input {
     padding-inline: 12px;
     font-size: 15px;
     border-color: var(--line);
+  }
+
+  /* Printing from a phone is rare, so the four buttons fit in two rows. */
+  .topbar-actions .print-btn {
+    display: none;
   }
 
   .runway-grid {

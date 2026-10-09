@@ -58,3 +58,44 @@ export function ShareSheet({ view, input, status, onClose }: { view: View; input
     </div>
   );
 }
+
+/** Asks before wiping a real plan, since it only lives on this device and in shared links. */
+export function NewPlanSheet({ name, onStart, onShare, onClose }: { name: string; onStart: () => void; onShare: () => void; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    ref.current?.focus();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-labelledby="new-title" tabIndex={-1} ref={ref} onClick={(e) => e.stopPropagation()}>
+        <div className="sheet-head">
+          <div>
+            <h2 id="new-title">Start a new plan?</h2>
+            <p>This clears {name}’s plan from this device. If you want to keep it, share the link first. Anyone with the link can still open it.</p>
+          </div>
+          <button className="btn btn-quiet" onClick={onClose} aria-label="Close">
+            <Icon name="x" />
+          </button>
+        </div>
+        <div className="sheet-actions">
+          <button className="btn btn-primary" onClick={onStart}>
+            <Icon name="plus" size={18} />
+            Start a new plan
+          </button>
+          <button className="btn" onClick={onShare}>
+            <Icon name="share" size={18} />
+            Save {name}’s link first
+          </button>
+          <button className="btn btn-quiet" onClick={onClose}>
+            Keep this plan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

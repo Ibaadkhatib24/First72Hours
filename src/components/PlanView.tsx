@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 import { Ledger } from './Ledger';
 import { Providers } from './Providers';
 import { Runway } from './Runway';
-import { ShareSheet } from './ShareSheet';
+import { NewPlanSheet, ShareSheet } from './ShareSheet';
 import { BrandMark } from './Start';
 import { isTab, PageHead, TabBar } from './Tabs';
 import { WhoPays } from './WhoPays';
@@ -28,6 +28,7 @@ interface Props {
   onEdit: (step?: number) => void;
   onClearMe: () => void;
   onReset: () => void;
+  onNew: () => void;
 }
 
 function clockText(nowH: number) {
@@ -56,10 +57,11 @@ const loadSize = () => {
   }
 };
 
-export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onEdit, onClearMe, onReset }: Props) {
+export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onEdit, onClearMe, onReset, onNew }: Props) {
   const now = useNow();
   const [tab, setTab] = useState<TabId>(tabFromHash);
   const [sharing, setSharing] = useState(false);
+  const [askNew, setAskNew] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [highlight, setHighlight] = useState<string | undefined>();
   const [onlyMine, setOnlyMine] = useState(!!me);
@@ -130,7 +132,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
 
   return (
     <>
-      <div className="app">
+      {/* Text size scales the whole app, top bar included, so everything stays lined up. */}
+      <div className="app" style={{ zoom: size }}>
         <header className="topbar">
           <div className="shell topbar-inner">
             <a className="brand" href="#home" style={{ textDecoration: 'none' }}>
@@ -151,7 +154,7 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
                 <Icon name="share" size={18} />
                 <span>Share</span>
               </button>
-              <button className="btn btn-quiet btn-small" onClick={() => window.print()}>
+              <button className="btn btn-quiet btn-small print-btn" onClick={() => window.print()}>
                 <Icon name="print" size={18} />
                 <span>Print</span>
               </button>
@@ -159,11 +162,15 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
                 <Icon name="edit" size={18} />
                 <span>Edit</span>
               </button>
+              <button className="btn btn-quiet btn-small" onClick={() => (demo ? onNew() : setAskNew(true))}>
+                <Icon name="plus" size={18} />
+                <span>New plan</span>
+              </button>
             </nav>
           </div>
         </header>
 
-        <div className="app-body" style={{ zoom: size }}>
+        <div className="app-body">
           <TabBar view={view} tab={tab} />
 
           <main className="shell page">
@@ -269,6 +276,17 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
           </main>
         </div>
         {sharing && <ShareSheet view={view} input={input} status={status} onClose={() => setSharing(false)} />}
+        {askNew && (
+          <NewPlanSheet
+            name={view.patientName}
+            onStart={onNew}
+            onShare={() => {
+              setAskNew(false);
+              setSharing(true);
+            }}
+            onClose={() => setAskNew(false)}
+          />
+        )}
         {toast && (
           <div className="toast" role="status">
             {toast}

@@ -5,6 +5,9 @@ import { PlanView } from './components/PlanView';
 import { Start } from './components/Start';
 import { clearSaved, loadInitial, persist, type AppState } from './state';
 
+// Drop the plan tab (#helpers and so on) so a fresh plan opens on Home.
+const clearTab = () => history.replaceState(null, '', location.pathname + location.search);
+
 export function App() {
   const [state, setState] = useState<AppState>(loadInitial);
 
@@ -60,7 +63,13 @@ export function App() {
       onClearMe={() => update({ me: undefined })}
       onReset={() => {
         clearSaved();
+        clearTab();
         setState({ screen: 'start', step: 0, input: null, status: {} });
+      }}
+      onNew={() => {
+        clearSaved();
+        clearTab();
+        setState({ screen: 'intake', step: 0, input: blankCase(), status: {}, demo: false });
       }}
     />
   );

@@ -14,6 +14,7 @@ export const CATEGORIES: Array<{ id: Category; label: string }> = [
   { id: 'relief', label: 'Caregiver relief' },
   { id: 'coordination', label: 'Family coordination' },
   { id: 'providers', label: 'Trusted providers' },
+  { id: 'coverage', label: 'Care and coverage' },
 ];
 
 function Because({ need }: { need: Need }) {
@@ -220,7 +221,7 @@ export function Ledger({ view, highlight, onlyMember }: { view: View; highlight?
                     <p style={{ fontSize: 15, color: 'var(--ink-2)' }}>
                       {view.name(l.memberId)} is there {Math.round(l.dutyHours)} of the {plan.coverage.required} hours
                       {l.overnights ? `, including ${l.overnights} ${l.overnights === 1 ? 'night' : 'nights'}` : ''}. Hand off {fmtRange(plan.t0, l.relief!.start, l.relief!.end)}
-                      {l.relief!.funding.provider ? ` to ${l.relief!.funding.provider.name.replace(/^Backup care/, 'backup care')}` : ''}
+                      {l.relief!.funding.provider ? ` to ${l.relief!.funding.provider.name.replace(/^Backup care/, 'backup care')}` : ' to a friend, neighbor or church member'}
                       {l.relief!.funding.youPay.high > 0 ? `, about ${moneyRange(l.relief!.funding.youPay)} out of pocket` : ''}.
                     </p>
                   </div>
@@ -287,7 +288,7 @@ export function Ledger({ view, highlight, onlyMember }: { view: View; highlight?
             {list.map((n) => (
               <Task key={n.id} need={n} view={view} highlight={highlight === n.id} />
             ))}
-            {count === 0 && <p className="cat-empty">{onlyMember ? 'Nothing for you here.' : 'Nothing in the papers calls for this.'}</p>}
+            {count === 0 && <p className="cat-empty">{onlyMember ? 'Nothing for you here.' : cat.id === 'coverage' ? 'Nothing urgent. See Care and coverage below for options.' : 'Nothing in the papers calls for this.'}</p>}
           </section>
         );
       })}

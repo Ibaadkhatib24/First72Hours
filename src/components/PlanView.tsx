@@ -3,6 +3,7 @@ import { dayName, fmtRange, PARTS, sourceById, type CaseInput, type Plan, type S
 import { useNow } from '../state';
 import { about, moneyRange, plural } from '../ui/format';
 import { makeView, type View } from '../ui/view';
+import { CareCoverage } from './CareCoverage';
 import { CrewCards } from './CrewCards';
 import { Fridge } from './Fridge';
 import { Icon } from './Icon';
@@ -20,6 +21,7 @@ interface Props {
   me?: string;
   demo: boolean;
   onStatus: (id: string, s: Status) => void;
+  onInput: (input: CaseInput) => void;
   onEdit: (step?: number) => void;
   onClearMe: () => void;
   onReset: () => void;
@@ -45,7 +47,7 @@ function gapPhrase(view: View) {
     .reduce((acc, s, i, arr) => (i === 0 ? s : i === arr.length - 1 ? `${acc} and ${s}` : `${acc}, ${s}`), '');
 }
 
-export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onClearMe, onReset }: Props) {
+export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onEdit, onClearMe, onReset }: Props) {
   const now = useNow();
   const view = useMemo(() => makeView(plan, input, status, onStatus, now), [plan, input, status, onStatus, now]);
   const [sharing, setSharing] = useState(false);
@@ -71,6 +73,24 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
   const heavy = plan.loads.filter((l) => l.level === 'overloaded');
   const meName = me ? view.name(me) : undefined;
   const later = plan.calls.filter((c) => c.status === 'later');
+  const uninsured = plan.screening.uninsured;
+  const SHORT: Record<string, string> = {
+    'hospital-fa': 'the hospital’s financial assistance',
+    fqhc: 'a sliding-fee health center',
+    medicaid: 'Medicaid',
+    marketplace: 'a Marketplace plan with tax credits',
+    snap: 'food assistance',
+  };
+  const likely = plan.screening.programs.filter((p) => p.status === 'likely' && SHORT[p.id]).map((p) => SHORT[p.id]);
+  const coverage = (
+    <section className="section" id="coverage" aria-labelledby="coverage-title">
+      <div className="section-head">
+        <h2 id="coverage-title">Care and coverage</h2>
+        <p>What {view.patientName} could qualify for, worked out from the intake answers. Follow-up care, the hospital bill, food and prescriptions.</p>
+      </div>
+      <CareCoverage view={view} input={input} onInput={onInput} />
+    </section>
+  );
   const beyond = plan.needs.filter((n) => n.beyond);
 
   return (
@@ -137,7 +157,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
 
           <section className="summary" aria-label="Summary">
             <p className="summary-lead">
-              {view.patientName} comes home <strong>{view.when(0)}</strong>.{' '}
+              {view.patientName} comes home <strong>{view.when(0)}</strong>
+              {uninsured ? ' without insurance' : ''}.{' '}
               {plan.coverage.required > 0 ? (
                 plan.gaps.length ? (
                   <>
@@ -152,8 +173,32 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
               ) : (
                 <>The papers don’t ask for someone there around the clock.</>
               )}{' '}
-              Benefits can cover about <strong className="good">{about(t.benefits)}</strong>, leaving the family about <strong>{about(t.youPay)}</strong>
-              {chip > 1 ? `, or ${about(t.perChipIn)} each` : ''}.
+              {uninsured ? (
+                <>
+                  The next 72 hours cost the family about <strong>{about(t.youPay)}</strong>
+                  {chip > 1 ? `, or ${about(t.perChipIn)} each` : ''}
+                  {t.benefits.high > 0 ? (
+                    <>
+                      , after about <strong className="good">{about(t.benefits)}</strong> of free help
+                    </>
+                  ) : null}
+                  .{likely.length > 0 && (
+                    <>
+                      {' '}
+                      Bigger savings: {view.patientName} likely qualifies for{' '}
+                      <a href="#coverage" className="good" style={{ fontWeight: 760 }}>
+                        {likely.length} {likely.length === 1 ? 'program' : 'programs'}
+                      </a>
+                      , starting with {likely[0]}.
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  Benefits can cover about <strong className="good">{about(t.benefits)}</strong>, leaving the family about <strong>{about(t.youPay)}</strong>
+                  {chip > 1 ? `, or ${about(t.perChipIn)} each` : ''}.
+                </>
+              )}
               {heavy.length > 0 && (
                 <>
                   {' '}
@@ -165,6 +210,7 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
               <a href="#runway">Runway</a>
               <a href="#tasks">{plural(plan.needs.filter((n) => !n.presence).length, 'task')}</a>
               <a href="#pays">Who pays</a>
+              <a href="#coverage">Care and coverage</a>
               <a href="#helpers">Helpers</a>
               <a href="#help">Trusted help</a>
               <a href="#later">Next week</a>
@@ -178,6 +224,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
             </div>
             <Runway view={view} onPick={pick} />
           </section>
+
+          {uninsured && coverage}
 
           <div className="body-grid">
             <section className="section" id="tasks" aria-labelledby="tasks-title">
@@ -198,6 +246,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onEdit, onCl
               <WhoPays view={view} />
             </aside>
           </div>
+
+          {!uninsured && coverage}
 
           <section className="section" id="helpers" aria-labelledby="helpers-title">
             <div className="section-head">

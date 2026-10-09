@@ -40,7 +40,7 @@ export function CrewCards({ view, input, status, onToast }: { view: View; input:
               )}
               {m.distance === 'far' && (
                 <p className="load-text">
-                  Owns the phone calls, orders and payments, so the people nearby can stay with {view.patientName}.
+                  Owns the phone calls, applications and payments, so the people nearby can stay with {view.patientName}.
                 </p>
               )}
               {load.level !== 'ok' && (
@@ -48,7 +48,10 @@ export function CrewCards({ view, input, status, onToast }: { view: View; input:
                   <Icon name="alert" size={18} />
                   <span>
                     {load.level === 'overloaded' ? `${m.name} is carrying too much.` : `${m.name} has a heavy stretch.`}
-                    {load.relief && ` Hand off ${fmtRange(plan.t0, load.relief.start, load.relief.end)}${load.relief.funding.provider ? ` to ${load.relief.funding.provider.name.replace(/^Backup care/, 'backup care')}` : ''}.`}
+                    {load.relief &&
+                      ` Hand off ${fmtRange(plan.t0, load.relief.start, load.relief.end)}${
+                        load.relief.funding.provider ? ` to ${load.relief.funding.provider.name.replace(/^Backup care/, 'backup care')}.` : '. Ask a friend, neighbor or church member to take it.'
+                      }`}
                   </span>
                 </div>
               )}

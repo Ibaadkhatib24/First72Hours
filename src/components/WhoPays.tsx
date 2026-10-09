@@ -14,14 +14,20 @@ function CallCard({ call, view }: { call: Call; view: View }) {
   const status = view.status[key] ?? 'todo';
   const urgent = call.status !== 'later' && call.deadline <= view.nowH + 1;
   const verb = call.kind === 'community' ? 'Ask' : 'Call';
-  const whenText = call.status === 'later' ? 'Start this week' : urgent ? `${verb} now` : `${verb} by ${view.when(call.deadline)}`;
+  const whenText = call.status === 'later' ? 'Start this week' : urgent ? `${verb} now` : `${verb} by ${view.when(niceDeadline(call.deadline, plan.t0))}`;
   const tag =
     call.status === 'counted' ? (
       <>
         Counted in the plan: <b className="num">{moneyRange(call.value)}</b>
       </>
     ) : call.status === 'ask' ? (
-      call.kind === 'community' ? 'Free if people say yes. Worth asking.' : call.eligibility === 'maybe' ? 'Some plans include this. Worth asking.' : 'Worth asking.'
+      call.kind === 'community'
+        ? 'Free if people say yes. Worth asking.'
+        : call.kind === 'insurance' && call.eligibility === 'maybe'
+          ? 'Some plans include this. Worth asking.'
+          : call.eligibility === 'maybe'
+            ? 'Varies, but often yes. Worth asking.'
+            : 'Worth asking.'
     ) : (
       'Too slow for this week. Start it now for next week.'
     );
@@ -57,6 +63,14 @@ function CallCard({ call, view }: { call: Call; view: View }) {
   );
 }
 
+/** Nobody should be told to call at 2am: move overnight deadlines back to 9pm the evening before. */
+function niceDeadline(h: number, t0: Date) {
+  const clock = (((t0.getHours() + t0.getMinutes() / 60 + h) % 24) + 24) % 24;
+  if (clock >= 21.5) return h - (clock - 21);
+  if (clock < 7) return h - (clock + 3);
+  return h;
+}
+
 export function WhoPays({ view }: { view: View }) {
   const { plan, input } = view;
   const t = plan.totals;
@@ -66,6 +80,7 @@ export function WhoPays({ view }: { view: View }) {
   const chippers = input.crew.filter((m) => m.chipIn);
   const calls = plan.calls;
   const counted = calls.filter((c) => c.status === 'counted');
+  const uninsured = plan.screening.uninsured;
 
   return (
     <div className="pays">
@@ -73,11 +88,11 @@ export function WhoPays({ view }: { view: View }) {
       <div className="money-row">
         <div className="good">
           <b className="num">{about(t.benefits)}</b>
-          <span>covered by benefits the family already has</span>
+          <span>{uninsured ? 'covered by free help' : 'covered by benefits the family already has'}</span>
         </div>
         <div>
           <b className="num">{about(t.youPay)}</b>
-          <span>family share for 72 hours</span>
+          <span>{uninsured ? 'family cost for 72 hours' : 'family share for 72 hours'}</span>
         </div>
       </div>
       <div className="stack" role="img" aria-label={`Benefits ${about(t.benefits)}, family ${about(t.youPay)}`}>
@@ -94,6 +109,14 @@ export function WhoPays({ view }: { view: View }) {
         )}
         {t.hsaEligible.high > 0 && <> {moneyRange(t.hsaEligible)} of it can come from an HSA or FSA.</>}
       </p>
+      {uninsured && (
+        <p className="early good">
+          <Icon name="coverage" size={18} />
+          <span>
+            The hospital bill is the big one. <a href="#coverage">Care and coverage</a> shows the financial assistance, clinic and food programs {view.patientName} likely qualifies for.
+          </span>
+        </p>
+      )}
       {plan.earlyBonus >= 10 && (
         <p className="early">
           <Icon name="clock" size={18} />

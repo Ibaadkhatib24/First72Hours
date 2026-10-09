@@ -103,11 +103,20 @@ export function Fridge({ view }: { view: View }) {
           </ul>
           <h2>Numbers</h2>
           <ul>
-            {phones.map(({ c, contact }) => (
-              <li key={c.sourceId}>
-                {c.name}: {contact.phone}
-              </li>
-            ))}
+            {plan.screening.programs
+              .filter((p) => p.status !== 'unlikely' && p.contact.phone && p.contact.phone !== '211')
+              .map((p) => (
+                <li key={p.id}>
+                  {p.name}: {p.contact.phone}
+                </li>
+              ))}
+            {phones
+              .filter(({ contact }) => !plan.screening.programs.some((p) => p.status !== 'unlikely' && p.contact.phone === contact.phone && contact.phone !== '211'))
+              .map(({ c, contact }) => (
+                <li key={c.sourceId}>
+                  {c.name}: {contact.phone}
+                </li>
+              ))}
           </ul>
           <p className="safety">Medical questions: call the number on the discharge papers. Emergency: call 911.</p>
         </div>

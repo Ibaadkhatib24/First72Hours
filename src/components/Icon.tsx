@@ -56,6 +56,12 @@ const PATHS: Record<Name, React.ReactNode> = {
       <path d="m9 12 2.2 2.2L15.5 10" />
     </>
   ),
+  coverage: (
+    <>
+      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+      <path d="M12 9v6M9 12h6" />
+    </>
+  ),
   phone: <path d="M6.5 3.5h3l1.5 4-2 1.3a10 10 0 0 0 6.2 6.2l1.3-2 4 1.5v3a2 2 0 0 1-2 2A15.5 15.5 0 0 1 4.5 5.5a2 2 0 0 1 2-2Z" />,
   copy: (
     <>

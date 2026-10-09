@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { blankCase, planCase, sampleCase, type CaseInput, type Status } from './engine';
+import { blankCase, planCase, sampleCase, sampleMedicareCase, type CaseInput, type Status } from './engine';
 import { Intake } from './components/Intake';
 import { PlanView } from './components/PlanView';
 import { Start } from './components/Start';
@@ -26,7 +26,9 @@ export function App() {
   if (state.screen === 'start' || !state.input) {
     return (
       <Start
-        onDemo={() => update({ screen: 'plan', input: sampleCase(), status: {}, demo: true, me: undefined })}
+        onDemo={(kind: 'uninsured' | 'medicare') =>
+          update({ screen: 'plan', input: kind === 'medicare' ? sampleMedicareCase() : sampleCase(), status: {}, demo: true, me: undefined })
+        }
         onNew={() => update({ screen: 'intake', step: 0, input: blankCase(), status: {}, demo: false, me: undefined })}
       />
     );
@@ -53,6 +55,7 @@ export function App() {
       me={state.me}
       demo={!!state.demo}
       onStatus={(id: string, s: Status) => update({ status: { ...state.status, [id]: s } })}
+      onInput={(input: CaseInput) => update({ input })}
       onEdit={(step = 0) => update({ screen: 'intake', step, me: undefined })}
       onClearMe={() => update({ me: undefined })}
       onReset={() => {

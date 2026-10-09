@@ -5,7 +5,7 @@ import {
   decode,
   PARTS,
   parseLocal,
-  SAMPLE_PAPERS,
+  UNINSURED_PAPERS,
   type CaseInput,
   type CrewMember,
   type Distance,
@@ -19,13 +19,13 @@ import { BrandMark } from './Start';
 const STEPS = ['Who’s coming home', 'Discharge papers', 'Who can help'];
 
 const INSURANCE: Array<{ id: Insurance; label: string; hint: string }> = [
+  { id: 'none', label: 'No insurance', hint: 'We’ll find free and low-cost help, and check what they qualify for' },
   { id: 'medicare', label: 'Original Medicare', hint: 'The red, white and blue card, with or without a supplement' },
   { id: 'medicare-advantage', label: 'Medicare Advantage', hint: 'A private Medicare plan with its own card' },
   { id: 'dual', label: 'Medicare and Medicaid', hint: 'Both, sometimes called dual eligible' },
   { id: 'medicaid', label: 'Medicaid only', hint: 'KanCare in Kansas' },
   { id: 'private', label: 'Job or marketplace plan', hint: 'Insurance through work or healthcare.gov' },
   { id: 'va', label: 'VA health care', hint: 'Care through Veterans Affairs' },
-  { id: 'none', label: 'No insurance', hint: 'We’ll focus on free and low-cost help' },
 ];
 
 const DISTANCE: Array<{ id: Distance; label: string }> = [
@@ -99,7 +99,7 @@ function PatientStep({ patient, set }: { patient: Patient; set: (p: Partial<Pati
         <div className="row">
           <div className="field">
             <label htmlFor="p-name">Their name</label>
-            <input id="p-name" className="input" value={patient.name} onChange={(e) => set({ name: e.target.value })} placeholder="Rosa Alvarez" autoComplete="off" />
+            <input id="p-name" className="input" value={patient.name} onChange={(e) => set({ name: e.target.value })} placeholder="Denise Carter" autoComplete="off" />
           </div>
           <div className="field">
             <label htmlFor="p-pron">Pronouns for call scripts</label>
@@ -142,6 +142,36 @@ function PatientStep({ patient, set }: { patient: Patient; set: (p: Partial<Pati
             <label className="toggle">
               <input type="checkbox" checked={patient.hasHsaFsa} onChange={(e) => set({ hasHsaFsa: e.target.checked })} />
               Has an HSA or FSA
+            </label>
+          </div>
+        </fieldset>
+        <fieldset className="field">
+          <legend>Household and income</legend>
+          <span className="hint">Used only to check programs like charity care, sliding-fee clinics and food assistance. It stays on this device.</span>
+          <div className="row">
+            <div className="field">
+              <label htmlFor="p-hh">People in the household</label>
+              <input id="p-hh" className="input num" type="number" min={1} max={12} value={patient.householdSize} onChange={(e) => set({ householdSize: Math.max(1, Number(e.target.value) || 1) })} />
+            </div>
+            <div className="field">
+              <label htmlFor="p-inc">Monthly income before taxes (optional)</label>
+              <input
+                id="p-inc"
+                className="input num"
+                inputMode="numeric"
+                placeholder="1700"
+                value={patient.monthlyIncome ?? ''}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^\d]/g, '');
+                  set({ monthlyIncome: v === '' ? null : Number(v) });
+                }}
+              />
+            </div>
+          </div>
+          <div className="toggles">
+            <label className="toggle">
+              <input type="checkbox" checked={patient.parent} onChange={(e) => set({ parent: e.target.checked })} />
+              Has children under 19 at home
             </label>
           </div>
         </fieldset>
@@ -222,7 +252,7 @@ function PapersStep({ input, onChange }: { input: CaseInput; onChange: (i: CaseI
                 Scan a photo
               </button>
               <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={(e) => scan(e.target.files?.[0])} />
-              <button className="link" onClick={() => onChange({ ...input, papers: SAMPLE_PAPERS })}>
+              <button className="link" onClick={() => onChange({ ...input, papers: UNINSURED_PAPERS })}>
                 Use sample papers
               </button>
               {ocr.state === 'reading' && <span className="ocr-status" role="status">Reading the photo on this device… {Math.round(ocr.progress * 100)}%</span>}

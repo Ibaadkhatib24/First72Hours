@@ -174,7 +174,8 @@ export function Runway({ view, onPick }: { view: View; onPick: (needId: string) 
               .filter((n) => n.pin && n.pin !== 'meal' && n.pin !== 'visit')
               .map((n) => {
                 const at = n.pin === 'arrival' ? 0 : n.times?.[0] ?? n.window[1];
-                const label = n.pin === 'arrival' ? 'Home' : n.pin === 'appointment' ? n.title.replace(/^Drive \w+ to /, '').replace(/ and stay.*$/, '') : 'Nurse visit';
+                const raw = n.pin === 'arrival' ? 'Home' : n.pin === 'appointment' ? n.title.replace(/^Drive \w+ to /, '').replace(/ and stay.*$/, '').replace(/^the /, '') : 'Nurse visit';
+                const label = raw[0].toUpperCase() + raw.slice(1);
                 if (n.pin === 'arrival') return null;
                 return (
                   <button

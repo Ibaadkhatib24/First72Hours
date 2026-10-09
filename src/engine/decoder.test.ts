@@ -29,7 +29,7 @@ describe('decode', () => {
     expect(Object.keys(byRule).sort()).toEqual(
       [
         'adl-aids', 'bath-safety', 'bending', 'diet', 'fall-risk', 'follow-up', 'home-health', 'lift-limit',
-        'mobility-device', 'no-driving', 'prescriptions', 'stairs', 'supervision', 'therapy',
+        'mobility-device', 'no-driving', 'prescriptions', 'stairs', 'supervision', 'therapy', 'warning-signs',
       ].sort(),
     );
     expect(byRule.supervision.params.hours).toBe(72);

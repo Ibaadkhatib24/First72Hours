@@ -33,3 +33,8 @@ export function crewColor(index: number) {
 export function firstName(full: string) {
   return full.trim().split(/\s+/)[0] || 'them';
 }
+
+/** Keeps "Sat 12pm–2pm" on one line so times don't split across lines on small screens. */
+export function keepTimes(s: string): string {
+  return s.replace(/\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun) (\d)/g, '$1 $2').replace(/(\d(?:am|pm)?)–(\d)/g, '$1⁠–⁠$2');
+}

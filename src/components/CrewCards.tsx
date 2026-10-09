@@ -1,5 +1,6 @@
 import { fmtRange, shareUrl, type CaseInput, type Status } from '../engine';
 import { memberMessage, memberPlan, smsHref } from '../ui/messages';
+import { keepTimes } from '../ui/format';
 import type { View } from '../ui/view';
 import { Icon } from './Icon';
 import { copyText } from './Script';
@@ -49,7 +50,7 @@ export function CrewCards({ view, input, status, onToast }: { view: View; input:
                   <span>
                     {load.level === 'overloaded' ? `${m.name} is carrying too much.` : `${m.name} has a heavy stretch.`}
                     {load.relief &&
-                      ` Hand off ${fmtRange(plan.t0, load.relief.start, load.relief.end)}${
+                      ` Hand off ${keepTimes(fmtRange(plan.t0, load.relief.start, load.relief.end))}${
                         load.relief.funding.provider ? ` to ${load.relief.funding.provider.name.replace(/^Backup care/, 'backup care')}.` : '. Ask a friend, neighbor or church member to take it.'
                       }`}
                   </span>
@@ -60,7 +61,14 @@ export function CrewCards({ view, input, status, onToast }: { view: View; input:
                   {mp.tasks.map((t) => (
                     <li key={t.needId}>
                       <time className="num">{view.when(t.at)}</time>
-                      <a href={`#task-${t.needId}`} style={{ textDecoration: 'none' }}>
+                      <a
+                        href="#todo"
+                        style={{ textDecoration: 'none' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          view.go('todo', t.needId);
+                        }}
+                      >
                         {status[t.needId] === 'done' ? <s>{t.title}</s> : t.title}
                       </a>
                     </li>

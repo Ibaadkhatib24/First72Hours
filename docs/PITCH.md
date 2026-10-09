@@ -8,37 +8,45 @@
 
 Point at the paper on the start screen: "This is First72 reading Denise's papers. Each highlighted line already has an owner and a time."
 
-## 0:20 The plan (40 seconds)
+## 0:20 Home (25 seconds)
 
 Click **See Denise's plan**.
 
 "Denise is 56, works at a restaurant, no insurance. Her daughter Tasha works days, her brother Marcus is three hours away in Wichita, and Gloria from church has mornings free."
 
-Read the summary sentence. Then the runway:
+"This is the home page. One sentence on where things stand, the top three things to worry about, and the next three tasks. Everything else is one tab away, and each tab shows only that one thing. My grandma could use this."
 
-"This is the next 72 hours under a real sky. Blue is Tasha, purple is Gloria. This red block is two hours where **nobody is with Denise**, and the papers say someone has to be. A checklist app would never show you that."
+## 0:45 Heads up (30 seconds)
 
-## 1:00 Free help, matched to the clock (40 seconds)
+Click the **Heads up** tab.
 
-Scroll to **Who pays**.
+"Nearly 1 in 4 people have a problem after leaving the hospital, and about half of those can be prevented. So First72 checks the plan for what usually goes wrong. At the top, the warning signs copied straight from her papers, with call 911. Then the flags, most urgent first: nobody is with Denise Saturday noon to 2, talk to the case manager before she leaves, and her new medicines cost money she may not have. Each one says what to do."
+
+Click **Fix it** on the first flag. It opens the Schedule.
+
+"This is the next 72 hours under a real sky. Blue is Tasha, purple is Gloria. That red block is the two hours where nobody is there, and the papers say someone has to be. A checklist app would never show you that."
+
+## 1:15 Free help, matched to the clock (35 seconds)
+
+Click the **Money** tab.
 
 "First72 looks for free help first, but it checks whether that help can actually start in time. The food pantry can, so the week's groceries are covered. The Kansas Equipment Exchange at KU gives away refurbished equipment, but it takes a couple of days. So the plan says buy the shower chair tonight, borrow the rest."
 
 Open **What to say** on the case manager card: "And the very first task is one conversation before she leaves the hospital: a ride voucher, a starter supply of medicine, the financial assistance form, and a clinic referral. Here's the exact script."
 
-## 1:40 Care and coverage (40 seconds)
+## 1:50 Health coverage (35 seconds)
 
-Scroll to **Care and coverage**.
+Click the **Health coverage** tab.
 
 "From household size and income, First72 screens what Denise qualifies for. At 128% of the poverty line: the hospital's charity care, a sliding fee at Heartland Community Health Center here in Lawrence, and SNAP with the 7-day option because she's off work. Marketplace open enrollment starts November 1."
 
-Click **Missouri**: "Watch this. Kansas hasn't expanded Medicaid, so Denise can't get KanCare. Move her across State Line Road and the same Denise likely qualifies for Medicaid. Same family, different answer, and First72 knows the difference."
+Click **Missouri**: "Kansas hasn't expanded Medicaid, so Denise can't get KanCare. Move her across State Line Road and the same Denise likely qualifies for Medicaid. Same family, different answer."
 
 Click back to **Kansas**.
 
-## 2:20 Obtain it (25 seconds)
+## 2:25 Helpers (20 seconds)
 
-Scroll to **Helpers**.
+Click the **Helpers** tab.
 
 "Marcus can't drive from Wichita, so he gets the phone calls and applications. Gloria drives to the wound clinic on her free morning. Each person gets just their part by text."
 
@@ -46,7 +54,7 @@ Tap **Text Marcus their list** (or show it on the phone).
 
 ## 2:45 Close (15 seconds)
 
-"No server: the plan lives in the link, and for anyone not on the group text, there's a fridge sheet. Discharge papers say what she can't do. First72 says who will, when, and what's free."
+Tap **Bigger text** once. "Big text for anyone who needs it. No server: the plan lives in the link, and for anyone not on the group text, there's a fridge sheet. Discharge papers say what she can't do. First72 says who will, when, what's free, and what could go wrong."
 
 ---
 
@@ -54,7 +62,9 @@ Tap **Text Marcus their list** (or show it on the phone).
 
 **Where does the data come from?** The 2026 poverty guidelines, HRSA health center rules, IRS rules for nonprofit hospital financial assistance, Kansas DCF, Kansas and Missouri Medicaid rules, and verified Lawrence and Kansas City resources. All linked in the README. Costs are local estimates shown as ranges, and "maybe" help is never counted in the totals.
 
-**Is this giving medical advice?** No. It only plans non-clinical help and coverage. Every page says to call the number on the discharge papers for medical questions and 911 in an emergency.
+**Is this giving medical advice?** No. It only plans non-clinical help and coverage. The Heads up tab flags planning problems (nobody there, medicines not picked up, no ride to the follow-up). The only medical lines it shows are copied word for word from the discharge papers, next to "Emergency: call 911." Every page says to call the number on the papers for medical questions.
+
+**How does Heads up decide what to flag?** Rules over the finished plan, not guesses. A flag needs a reason in the plan itself: an uncovered hour, a prescription in the papers, a fall-risk line, a follow-up with no family driver, a helper over the hour limit. Each one shows the line from the papers that caused it and clears itself when the task is marked done.
 
 **What about people with insurance?** Same engine. Click "Or see Rosa" on the start screen: Medicare Advantage meals, rides and equipment, each checked against how much notice it needs.
 

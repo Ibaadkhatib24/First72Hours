@@ -1,6 +1,6 @@
 import type { Category } from '../engine';
 
-type Name = Category | 'phone' | 'copy' | 'share' | 'print' | 'check' | 'clock' | 'alert' | 'edit' | 'camera' | 'message' | 'chevron' | 'plus' | 'x' | 'lock';
+type Name = Category | 'phone' | 'copy' | 'share' | 'print' | 'check' | 'clock' | 'alert' | 'edit' | 'camera' | 'message' | 'chevron' | 'plus' | 'x' | 'lock' | 'home' | 'money' | 'back' | 'text' | 'list' | 'week';
 
 const PATHS: Record<Name, React.ReactNode> = {
   transport: (
@@ -104,6 +104,32 @@ const PATHS: Record<Name, React.ReactNode> = {
   ),
   message: <path d="M4.5 6.5A2 2 0 0 1 6.5 4.5h11a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H10l-4.5 3.5v-3.5h-1Z" />,
   chevron: <path d="m9 6 6 6-6 6" />,
+  back: <path d="m15 6-6 6 6 6" />,
+  home: (
+    <>
+      <path d="M3.5 11.5 12 4.5l8.5 7" />
+      <path d="M6 10v9.5h4.5V14h3v5.5H18V10" />
+    </>
+  ),
+  money: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M14.8 9.2c-.5-.9-1.6-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2 0 2.9 5.8 1.5 5.8 4.4 0 1.2-1.3 2-2.9 2-1.3 0-2.5-.6-3-1.6M12 6.2v1.6M12 16.2v1.6" />
+    </>
+  ),
+  text: (
+    <>
+      <path d="M3.5 18 8 6l4.5 12M5.2 13.5h5.6" />
+      <path d="M14 18l3-8 3 8M15 15.5h4" />
+    </>
+  ),
+  list: <path d="M9 7h11M9 12h11M9 17h11M4.5 7h.01M4.5 12h.01M4.5 17h.01" />,
+  week: (
+    <>
+      <rect x="4" y="5.5" width="16" height="14" rx="2" />
+      <path d="M4 10h16M9 3.5v4M15 3.5v4M8 14h2M11 14h2M14 14h2" />
+    </>
+  ),
   plus: <path d="M12 5v14M5 12h14" />,
   x: <path d="M6 6l12 12M18 6 6 18" />,
   lock: (

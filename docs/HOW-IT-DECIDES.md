@@ -27,6 +27,7 @@ The decoder splits the papers into sentences (keeping titles like "Dr." intact a
 | Chores | "No housework or yard work" | Household help |
 | Supplies | "You will need a glucose meter, test strips and lancets" | Added to the pharmacy pickup, priced item by item |
 | Off work | "Do not return to work until cleared" | Employer call, food assistance, 211 rent and utility help |
+| Warning signs | "Go to the emergency room for fever, spreading redness..." | Copied word for word into the box at the top of Heads up. No task, no advice |
 
 Intake answers add needs too. For patients without insurance (or under 200% of the poverty line), the plan adds the case manager ask before discharge, a cash-price check before prescription pickup, a food pantry run instead of grocery delivery, and coverage tasks from the screener below.  Living alone adds a first-night stay (if the papers don't already require supervision) and daily check-in visits and calls once round-the-clock coverage ends. Every plan gets the group text and the fridge sheet.
 
@@ -103,6 +104,30 @@ From household size and monthly income, the screener computes the percent of the
 ## 6. Caregiver load
 
 For each helper: hours on shift, overnights, and longest stretch. 36+ hours or an 18-hour stretch is **overloaded**; 24+ hours, a 14-hour stretch or two overnights is **heavy**. Heavy or overloaded helpers get a suggested hand-off (their last overnight, or the middle of their longest stretch), priced through the same funding engine.
+
+## 7. Heads up
+
+After the plan is built, `flags.ts` checks it for the things that most often go wrong in the first days home. Each flag needs a reason in the plan itself, and it clears when the tasks behind it are marked done.
+
+| Flag | Raised when | Level | Cleared when |
+|---|---|---|---|
+| Nobody there | An hour in the roster has no one, and the papers or intake say someone should be there | Now if it's in the first 24 hours, otherwise soon | The gap is marked covered or its call is set up |
+| No one assigned | A task has no family member and no service that can start in time | Now | The task is done |
+| Talk to the case manager | There's still time before discharge | Now | The ask is done |
+| Medicines | New prescriptions are in the papers. Without insurance it adds the cash-price step | Now | Pickup (and price check) done |
+| Falls | Fall-proofing, bathroom setup or a first-floor bed is needed | Now | Those tasks done |
+| Supplies | The papers list supplies like test strips | Now | The kit is picked up |
+| Ride to a visit | A follow-up has no family driver | Soon | The ride is booked |
+| Book a visit | A follow-up still needs to be booked | Soon | Booked |
+| Caregiver load | A helper is heavy or overloaded (section 6) | Soon | The hand-off is covered |
+| Alone afterwards | The patient lives alone and coverage ends before hour 72 | Keep an eye on | Check-ins done |
+| Hospital bill | No insurance or low income, and the screener says financial assistance is likely or possible | Soon | Application done |
+| Lost pay | The papers say no work, and food assistance is likely or possible | Soon | Applications done |
+| Call due | Help counted in the totals has to be called within 6 hours to start in time | Now | The call is set up |
+
+Flags sort open first, then now, soon, keep an eye on. Lines from the papers that say when to get medical help are shown as quotes only, next to "Emergency: call 911", with a note that First72 doesn't give medical advice.
+
+Why these: nearly a quarter of patients have an adverse event after discharge and about half are preventable or ameliorable ([CMAJ 2004](https://www.cmaj.ca/content/170/3/353)), and fall injuries are the third most common reason older adults are readmitted within 30 days ([JAMA Network Open 2019](https://pmc.ncbi.nlm.nih.gov/articles/PMC6632136)).
 
 ## Prices used for estimates
 

@@ -1,4 +1,4 @@
-import { fmtRange, type Category, type Need } from '../engine';
+import { dayName, fmtRange, type Category, type Need } from '../engine';
 import { moneyRange } from '../ui/format';
 import type { View } from '../ui/view';
 import { Icon } from './Icon';
@@ -90,6 +90,12 @@ function Task({ need, view, highlight }: { need: Need; view: View; highlight: bo
               About {moneyRange(a.service.cost)} {need.costUnit ?? ''} if paid
             </span>
           )}
+          {view.flaggedNeeds.has(need.id) && status !== 'done' && (
+            <span className="chip-flag">
+              <Icon name="alert" size={14} />
+              Heads up
+            </span>
+          )}
           {(items?.hsa || service?.hsa) && <span className="cost covered">HSA/FSA eligible</span>}
           {a?.benefitShare && (
             <span className="cost covered">
@@ -154,13 +160,27 @@ function Task({ need, view, highlight }: { need: Need; view: View; highlight: bo
   );
 }
 
-export function Ledger({ view, highlight, onlyMember }: { view: View; highlight?: string; onlyMember?: string }) {
+export function Ledger({
+  view,
+  highlight,
+  onlyMember,
+  mode = 'type',
+  hideDone = false,
+}: {
+  view: View;
+  highlight?: string;
+  onlyMember?: string;
+  mode?: 'time' | 'type';
+  hideDone?: boolean;
+}) {
   const { plan } = view;
   const visible = (n: Need) => {
+    if (hideDone && view.status[n.id] === 'done') return false;
     if (!onlyMember) return true;
     const o = plan.assignments[n.id]?.owner;
     return o?.kind === 'crew' && o.memberId === onlyMember;
   };
+  if (mode === 'time') return <ByTime view={view} highlight={highlight} visible={visible} />;
   const presence = plan.needs.find((n) => n.presence);
   const overloaded = plan.loads.filter((l) => l.level !== 'ok' && l.relief);
   const services = plan.needs.filter((n) => plan.assignments[n.id]?.owner.kind === 'service' && !n.beyond && !plan.assignments[n.id]?.parts);
@@ -259,7 +279,7 @@ export function Ledger({ view, highlight, onlyMember }: { view: View; highlight?
                       <span className="cost num">You pay {moneyRange(g.funding.youPay)}</span>
                     </div>
                     <p style={{ fontSize: 14, color: 'var(--ink-2)' }}>
-                      {g.hours} hours with no one there. <a href="#help">Compare trusted providers</a> that can start in time.
+                      {g.hours} hours with no one there. <a href="#hire">Compare paid help</a> that can start in time.
                     </p>
                   </div>
                 </article>
@@ -292,6 +312,44 @@ export function Ledger({ view, highlight, onlyMember }: { view: View; highlight?
           </section>
         );
       })}
+    </div>
+  );
+}
+
+/** The simplest view: one list in time order, a heading per day. */
+function ByTime({ view, highlight, visible }: { view: View; highlight?: string; visible: (n: Need) => boolean }) {
+  const { plan } = view;
+  const base = plan.blocks[0]?.start ?? 0;
+  const items = plan.needs
+    .filter((n) => !n.presence && visible(n) && plan.assignments[n.id])
+    .sort((a, b) => Number(!!a.beyond) - Number(!!b.beyond) || plan.assignments[a.id].at - plan.assignments[b.id].at);
+  const groups: Array<{ key: string; label: string; items: Need[] }> = [];
+  for (const n of items) {
+    const at = plan.assignments[n.id].at;
+    const key = n.beyond ? 'later' : at < 0 ? 'before' : `d${Math.floor((at - base) / 24)}`;
+    const d = Math.floor((at - base) / 24);
+    const label = n.beyond ? 'This week, for later' : at < 0 ? 'Before leaving the hospital' : `${dayName(plan.t0, d, true)}${d === 0 ? ', discharge day' : ''}`;
+    const g = groups.find((x) => x.key === key);
+    if (g) g.items.push(n);
+    else groups.push({ key, label, items: [n] });
+  }
+  if (!groups.length) return <p className="cat-empty">Nothing left on the list.</p>;
+  return (
+    <div>
+      {groups.map((g) => (
+        <section className="cat" key={g.key} aria-label={g.label}>
+          <div className="cat-head">
+            <span className="cat-icon">
+              <Icon name={g.key === 'later' ? 'appointments' : 'clock'} />
+            </span>
+            <h3>{g.label}</h3>
+            <span className="count">{g.items.length}</span>
+          </div>
+          {g.items.map((n) => (
+            <Task key={n.id} need={n} view={view} highlight={highlight === n.id} />
+          ))}
+        </section>
+      ))}
     </div>
   );
 }

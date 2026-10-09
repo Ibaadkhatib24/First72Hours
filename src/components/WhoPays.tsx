@@ -113,7 +113,7 @@ export function WhoPays({ view }: { view: View }) {
         <p className="early good">
           <Icon name="coverage" size={18} />
           <span>
-            The hospital bill is the big one. <a href="#coverage">Care and coverage</a> shows the financial assistance, clinic and food programs {view.patientName} likely qualifies for.
+            The hospital bill is the big one. <a href="#coverage">Health coverage</a> shows the financial assistance, clinic and food programs {view.patientName} likely qualifies for.
           </span>
         </p>
       )}

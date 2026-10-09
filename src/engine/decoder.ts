@@ -282,6 +282,15 @@ const RULES: Array<{ rule: FindingRule; fn: RuleFn; multi?: boolean }> = [
     },
   },
   {
+    // The hospital's own "when to get help" lines. Shown word for word, never interpreted.
+    rule: 'warning-signs',
+    multi: true,
+    fn: (s) =>
+      /\b(call (your|the) (surgeon|doctor|provider|clinic|care team|nurse)|call 911|go to the (nearest )?(emergency room|emergency department|er)\b|return to the (emergency|er)\b|seek (medical|emergency) (care|attention|help)|get (medical )?help right away)/i.test(s)
+        ? { label: 'When to get medical help' }
+        : null,
+  },
+  {
     rule: 'no-housework',
     fn: (s) =>
       /\b(no|avoid|don'?t|do not)\b[^.]*\b(housework|house work|vacuum(ing)?|yard ?work|mow(ing)?|laundry|heavy chores|chores)\b/i.test(s)

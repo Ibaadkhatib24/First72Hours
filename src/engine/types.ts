@@ -89,7 +89,8 @@ export type FindingRule =
   | 'daily-weight'
   | 'no-housework'
   | 'supplies'
-  | 'no-work';
+  | 'no-work'
+  | 'warning-signs';
 
 export interface Finding {
   id: string;

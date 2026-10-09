@@ -24,8 +24,9 @@ Most tools for this are directories or checklists. First72 is a **planner**. You
 - **Where nobody is covering**, hour by hour
 - **What it costs, what's free, and whether that free help can start in time**
 - **What the patient likely qualifies for**: charity care on the hospital bill, a sliding-fee health center, food assistance, Medicaid or a Marketplace plan
+- **What could go wrong**, flagged before it does, with one plain next step for each
 
-![Denise's plan: a one-sentence summary, then the 72-hour runway](docs/screenshots/plan.png)
+![Denise's plan home page: one sentence on where things stand, the top heads-up flags, and what's next](docs/screenshots/plan.png)
 
 ## Built for families without insurance
 
@@ -60,35 +61,70 @@ First72 gives every source a lead time and checks it against when the help is ac
 
 The same engine handles insured patients. In the Medicare Advantage example (Rosa, 74), the plan's ride benefit needs about 48 hours of notice and her follow-up is 43 hours away, so it says **too slow by an hour**, books a rideshare, and points the ride benefit at next week's physical therapy instead. It also shows what starting earlier would have saved: *"Starting this plan two days before discharge would unlock about $60 more."*
 
-### 2. Every task cites its source
+### 2. Heads up: it flags what could go wrong
+
+Nearly 1 in 4 people have a problem after leaving the hospital, and about half of those could have been prevented or made less serious ([CMAJ](https://www.cmaj.ca/content/170/3/353)). The **Heads up** tab checks the plan for the usual trouble spots and says what to do about each one:
+
+- **Nobody there:** hours when no one is with the patient but the papers say someone has to be
+- **Medicines:** new prescriptions to pick up today, and for uninsured families, getting the cash price first so cost doesn't stop the pickup
+- **Falls:** paths, night lights and the bathroom set up before the first night ([falls are a leading reason older adults go back to the hospital](https://pmc.ncbi.nlm.nih.gov/articles/PMC6632136))
+- **Missed visits:** follow-ups with no family driver, or not booked yet
+- **Tired caregivers:** one person carrying too many hours or nights
+- **Money:** the hospital bill, lost paychecks and calls that have to happen before help can start in time
+
+Each flag is sorted into **Needs attention now**, **Do soon** or **Keep an eye on**, shows the line from the papers behind it, and has a **Fix it** button that jumps to the exact task. Flags clear themselves as tasks get marked done. The warning-sign lines from the papers ("go to the emergency room for fever...") are pulled into a box at the top with "Emergency: call 911." First72 only copies those lines; it never gives medical advice.
+
+![Heads up: the papers' warning signs, then flags sorted by how urgent they are](docs/screenshots/heads-up.png)
+
+### 3. Every task cites its source
 
 The **Discharge Decoder** reads the papers and turns each restriction into tasks. Every task shows the exact sentence that created it (or the intake answer, like "Denise lives alone"). Nothing appears without a reason, which matters when a stressed family is deciding what to skip.
 
 ![The decoder running live as papers are pasted](docs/screenshots/decoder.png)
 
-### 3. The 72-hour runway
+### 4. The 72-hour runway
 
-A timeline under a real sky (nights are dark, days are light) that shows who is with the patient each hour, every task as a dot, and **red hatching wherever nobody is there yet**. Mark the call that covers a gap as set up and the gap turns into booked help.
+On the **Schedule** tab, a timeline under a real sky (nights are dark, days are light) that shows who is with the patient each hour, every task as a dot, and **red hatching wherever nobody is there yet**. Mark the call that covers a gap as set up and the gap turns into booked help. Below it, the same schedule as a plain list: who's there, in order, with "Nobody yet" spelled out.
 
 ![The runway: shifts, tasks and the uncovered hours](docs/screenshots/runway.png)
 
-### 4. Helpers get roles by distance
+### 5. Helpers get roles by distance
 
 People nearby take the shifts and the drives. People far away get the phone calls, applications and payments. In the sample, Marcus lives in Wichita and can't drive his sister anywhere, so he owns the case manager call, the cash-price check, the clinic booking, and the financial assistance and SNAP applications. Each person can be texted just their part.
 
-### 5. A burnout guard for the caregiver
+### 6. A burnout guard for the caregiver
 
 The plan tracks hours on duty. When one person is carrying too much (Tasha covers the first 16 hours straight, or in the Medicare example, Maya covers 42 of 72 hours including every night), it flags it, suggests a hand-off, and points to FMLA protection for the job.
 
 ![Helper cards with load meters and the burnout flag](docs/screenshots/helpers.png)
 
-### 6. Calls with scripts, not just phone numbers
+### 7. Calls with scripts, not just phone numbers
 
-"Who pays" is a ranked call list. Each call says when you have to call by, what it covers, what it's too slow for, and gives a word-for-word script plus what to have ready. Estimates are honest ranges, and anything that only sometimes comes through (a church volunteer, a hospital ride voucher, a plan benefit some plans have) is marked "worth asking" rather than counted.
+The **Money** tab is a ranked call list. Each call says when you have to call by, what it covers, what it's too slow for, and gives a word-for-word script plus what to have ready. Estimates are honest ranges, and anything that only sometimes comes through (a church volunteer, a hospital ride voucher, a plan benefit some plans have) is marked "worth asking" rather than counted.
 
 ![Who pays: benefits found, family share, and the call list](docs/screenshots/who-pays.png)
 
-### 7. Private by design
+### 8. Simple enough for anyone
+
+A caregiver might be 19 or 79, on a cracked phone in a hospital hallway. So the plan is split into one thing per page:
+
+| Tab | What's on it |
+|---|---|
+| **Home** | One sentence on where things stand, the top 3 heads-up flags, the next 3 tasks and a tile for everything else |
+| **Heads up** | What could go wrong and what to do |
+| **Schedule** | Who is with the patient each hour |
+| **To-do** | Every task in time order ("Before leaving the hospital", "Friday, discharge day"...), each marked To do, Asked or Done |
+| **Money** | Costs, free help and calls to make |
+| **Health coverage** | Programs the patient likely qualifies for |
+| **Helpers** | Each person's part, ready to text |
+| **Hire help** | Paid options, and whether they can start in time |
+| **Next week** | Things to start now for after the 72 hours |
+
+Click Helpers and you only see helpers. Every page has a "Home" link at the top, the browser's back button works, and the tabs show counts (open flags, gaps in the schedule, tasks left). A **Bigger text** button in the top bar makes everything larger, plain words replace jargon, and on a phone the top buttons keep their labels instead of turning into mystery icons.
+
+<img src="docs/screenshots/mobile.png" alt="The plan home page on a phone" width="320">
+
+### 9. Private by design
 
 There is no backend. The plan is computed in the browser, saved on the device, and shared by putting the whole plan in the link's `#fragment`, which browsers never send to a server. For anyone not on the group text, there's a printable **fridge sheet** with the shift table, the day's tasks and the numbers to call.
 
@@ -97,7 +133,7 @@ There is no backend. The plan is computed in the browser, saved on the device, a
 | Challenge | First72 |
 |---|---|
 | **Identify** the right support | Discharge Decoder turns papers into needs, each with a citation. Covers all 8 areas from the brief (transportation, meals, household help, appointment logistics, equipment setup, caregiver relief, family coordination, trusted providers) plus a ninth for uninsured families: care and coverage |
-| **Obtain** it | Tasks assigned to specific people at specific times, round-the-clock shifts with gaps flagged, the "ask before you leave" case manager script, call scripts, per-person text messages, provider cards that show whether they can start in time |
+| **Obtain** it | Tasks assigned to specific people at specific times, round-the-clock shifts with gaps flagged, the "ask before you leave" case manager script, call scripts, per-person text messages, provider cards that show whether they can start in time, and a Heads up list that catches what could go wrong before it does |
 | **Pay** for it | Free and low-cost options first (family, church, food pantry, equipment exchange, 211), lead-time checks, honest out-of-pocket ranges split across the family, and a screener for charity care, sliding-fee clinics, SNAP, Medicaid and the Marketplace |
 
 ## How it works
@@ -112,15 +148,17 @@ flowchart LR
   R --> A
   A --> F[Funding<br/>eligibility x lead time]
   F --> O[Plan<br/>runway, tasks, call list, totals]
+  O --> H[Heads up<br/>risks + what to do]
 ```
 
 All of it lives in `src/engine`, as plain TypeScript with no UI dependencies, and it's covered by tests.
 
-- **`decoder.ts`** finds 18 kinds of restriction (driving, lifting, supervision, equipment, diet, follow-ups, therapy, home health and more) and keeps the sentence it read.
+- **`decoder.ts`** finds 21 kinds of restriction and instruction (driving, lifting, supervision, equipment, diet, follow-ups, therapy, home health, supplies, time off work, warning signs and more) and keeps the sentence it read.
 - **`needs.ts`** turns findings plus intake answers into tasks, each with a time window, effort, requirements (car, lifting) and what a paid service would cost.
 - **`planner.ts`** builds the shift roster, assigns every task to the best person without double-booking anyone, splits meals meal by meal, finds gaps, measures each helper's load, and builds the call list.
 - **`funding.ts`** has every source's eligibility rules, coverage, lead time, contact, call script and caveat.
 - **`eligibility.ts`** screens for care and coverage from household size and income (2026 poverty guidelines), with Kansas and Missouri rules and local resources for Lawrence and Kansas City.
+- **`flags.ts`** reviews the finished plan for risks (uncovered hours, medicines, falls, missed visits, caregiver load, money) and marks each one handled as tasks get done.
 - **`share.ts`** packs the plan into a compressed link.
 
 More detail on the rules and numbers is in [docs/HOW-IT-DECIDES.md](docs/HOW-IT-DECIDES.md). The demo script for judging is in [docs/PITCH.md](docs/PITCH.md). The palette, type, logo and banners are in [docs/BRAND.md](docs/BRAND.md).
@@ -145,7 +183,8 @@ The repo includes a GitHub Actions workflow that tests, builds and publishes to 
 ```
 src/
   engine/        planning engine (no React), with tests
-  components/    Start, Intake, PlanView, Runway, Ledger, WhoPays, CrewCards, Providers, Fridge
+  components/    Start, Intake, PlanView (tabs), Home, HeadsUpList, Runway, Ledger, WhoPays,
+                 CareCoverage, CrewCards, Providers, Fridge
   ui/            formatting, messages, view helpers
   styles/        one stylesheet with light and dark tokens
 docs/            pitch script, decision rules, brand kit, screenshots
@@ -162,7 +201,14 @@ docs/            pitch script, decision rules, brand kit, screenshots
 
 First72 plans non-clinical help only and does not give medical advice.
 
-## Sources for the funding and eligibility rules
+## Sources
+
+For the heads-up flags:
+
+- [Baker and Norton, "Adverse events and patient safety in Canadian health care," CMAJ 2004](https://www.cmaj.ca/content/170/3/353) (nearly a quarter of discharged patients had an adverse event, about half preventable or ameliorable)
+- [Hoffman et al., "Posthospital Fall Injuries and 30-Day Readmissions in Adults 65 Years and Older," JAMA Network Open 2019](https://pmc.ncbi.nlm.nih.gov/articles/PMC6632136) (fall injuries were the third most common reason for readmission)
+
+For the funding and eligibility rules:
 
 - [2026 HHS poverty guidelines (via USAC)](https://www.usac.org/2026-federal-poverty-guidelines-for-survivors-applying-to-lifeline/) ($15,960 for one person, plus $5,680 per additional person)
 - [HRSA: health center sliding fee discount program](https://bphc.hrsa.gov/es/node/1789) (full discount at or below 100%, sliding to 200%, no one turned away for inability to pay)

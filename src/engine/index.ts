@@ -10,3 +10,5 @@ export { sampleCase, sampleMedicareCase, blankCase, SAMPLE_PAPERS, UNINSURED_PAP
 export { screen, fplPercent, fplAnnual, openEnrollment, FPL_2026 } from './eligibility';
 export type { Program, ProgramStatus, Screening } from './eligibility';
 export * from './share';
+export { headsUp } from './flags';
+export type { Flag, FlagLevel, HeadsUp, TabId } from './flags';

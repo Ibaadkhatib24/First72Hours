@@ -6,5 +6,7 @@ export { SOURCES, sourceById, fundItems, fundService } from './funding';
 export type { Funding, Layer, Range, SourceOption, Ctx } from './funding';
 export { planCase, mid } from './planner';
 export type { Plan, Assignment, Gap, Load, Shift, Owner, Totals, Call, Part } from './planner';
-export { sampleCase, blankCase, SAMPLE_PAPERS } from './sample';
+export { sampleCase, sampleMedicareCase, blankCase, SAMPLE_PAPERS, UNINSURED_PAPERS } from './sample';
+export { screen, fplPercent, fplAnnual, openEnrollment, FPL_2026 } from './eligibility';
+export type { Program, ProgramStatus, Screening } from './eligibility';
 export * from './share';

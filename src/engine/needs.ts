@@ -1,3 +1,4 @@
+import { screen } from './eligibility';
 import { clockRel, dayName, fmtWhen, nextClockRel, parseLocal, relHours, WINDOW_H } from './time';
 import type { CaseInput, Finding, LineItem, Need, Reason } from './types';
 
@@ -40,7 +41,23 @@ const ITEMS: Record<string, LineItem> = {
   scale: { name: 'Bathroom scale', low: 20, high: 35 },
   'hospital bed': { name: 'Hospital bed, first month rental', low: 200, high: 500, dme: true, hsa: true },
   groceries: { name: 'Grocery delivery fee', low: 10, high: 20 },
+  pantry: { name: 'Groceries for the first few days', low: 45, high: 75, food: true },
+  'glucose meter': { name: 'Glucose meter', low: 15, high: 30, dme: true, hsa: true },
+  'blood sugar meter': { name: 'Glucose meter', low: 15, high: 30, dme: true, hsa: true },
+  glucometer: { name: 'Glucose meter', low: 15, high: 30, dme: true, hsa: true },
+  'test strips': { name: 'Test strips (50)', low: 15, high: 40, dme: true, hsa: true },
+  lancets: { name: 'Lancets', low: 5, high: 10, dme: true, hsa: true },
+  gauze: { name: 'Gauze pads', low: 8, high: 15, supply: true, hsa: true },
+  'dressing supplies': { name: 'Dressing supplies', low: 15, high: 30, supply: true, hsa: true },
+  bandages: { name: 'Bandages', low: 5, high: 12, supply: true, hsa: true },
+  'medical tape': { name: 'Medical tape', low: 4, high: 8, supply: true, hsa: true },
+  saline: { name: 'Saline wash', low: 5, high: 10, supply: true, hsa: true },
+  'pen needles': { name: 'Pen needles', low: 10, high: 25, supply: true, hsa: true },
+  syringes: { name: 'Syringes', low: 10, high: 25, supply: true, hsa: true },
+  'sharps container': { name: 'Sharps container', low: 5, high: 12, supply: true, hsa: true },
 };
+
+const officeOf = (who: string) => (/clinic|office|center/i.test(who) ? who : `${who}’s office`);
 
 const fromPapers = (f: Finding): Reason => ({ kind: 'papers', findingId: f.id, quote: f.quote });
 const fromProfile = (fact: string): Reason => ({ kind: 'profile', fact });
@@ -71,6 +88,16 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
 
   const needs: Need[] = [];
   const presence: Array<[number, number]> = [];
+  const screening = screen(patient, parseLocal(input.plannedAt));
+  const uninsured = screening.uninsured;
+  const lowIncome = screening.fpl !== undefined && screening.fpl <= 200;
+  const tight = uninsured || lowIncome;
+  const incomeFact = screening.fpl !== undefined ? `Income is about ${screening.fpl}% of the poverty line` : undefined;
+  const coverageWhy: Reason[] = [
+    ...(uninsured ? [fromProfile(`${name} has no insurance`)] : []),
+    ...(incomeFact ? [fromProfile(incomeFact)] : []),
+  ];
+  const program = (id: string) => screening.programs.find((p) => p.id === id);
   const device = one('mobility-device');
   const wheelchair = device?.params.device === 'wheelchair';
 
@@ -93,7 +120,35 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
     pin: 'arrival',
   });
 
+  if (tight) {
+    needs.push({
+      id: 'ask-hospital',
+      category: 'providers',
+      title: 'Before leaving, ask the case manager for help',
+      detail:
+        'One conversation covers a lot: a ride voucher if no one can drive, any equipment they can send home, a starter supply of the new medicines, the financial assistance application, and a referral to a community health center.',
+      because: coverageWhy.length ? coverageWhy : [fromProfile('Money is tight')],
+      window: fit(Math.min(-1, prepStart), 0),
+      duration: 0.5,
+      where: 'remote',
+      req: {},
+    });
+  }
+
   const rx = one('prescriptions');
+  if (rx && uninsured) {
+    needs.push({
+      id: 'rx-price',
+      category: 'coverage',
+      title: 'Get the cash price for each prescription before pickup',
+      detail: `Ask for the cash price and a cheaper generic, then compare a discount card and the health center pharmacy.${rx.params.insulin ? ' For insulin, ask about the maker’s program for uninsured patients.' : ''}`,
+      because: [fromPapers(rx), ...coverageWhy.slice(0, 1)],
+      window: fit(prepStart, -0.5),
+      duration: 0.5,
+      where: 'remote',
+      req: {},
+    });
+  }
   if (rx) {
     needs.push({
       id: 'rx',
@@ -154,17 +209,26 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
     kitItems.push(ITEMS.scale);
     kitReasons.push(fromPapers(weight));
   }
+  const safetyCount = kitItems.length;
+  for (const f of by('supplies')) {
+    for (const it of f.params.items as string[]) {
+      const item = ITEMS[it.toLowerCase()];
+      if (item && !kitItems.some((k) => k.name === item.name)) kitItems.push(item);
+    }
+    kitReasons.push(fromPapers(f));
+  }
   if (kitItems.length) {
+    const hasSupplies = kitItems.length > safetyCount;
     needs.push({
       id: 'kit',
       category: 'equipment',
-      title: 'Order the home-safety kit for same-day delivery',
-      detail: `${kitItems.map((i) => i.name).join(', ')}. Save receipts for HSA/FSA.`,
+      title: `${tight ? 'Pick up' : 'Order'} the ${hasSupplies && safetyCount ? 'supplies and safety gear' : hasSupplies ? 'home supplies' : 'home-safety kit'}${tight ? ' at the pharmacy' : ' for same-day delivery'}`,
+      detail: `${kitItems.map((i) => i.name).join(', ')}.${tight ? ' Store brands cost less and work the same.' : ' Save receipts for HSA/FSA.'}`,
       because: kitReasons,
-      window: fit(prepStart, 2),
-      duration: 0.5,
-      where: 'remote',
-      req: {},
+      window: fit(prepStart, tight ? 4 : 2),
+      duration: tight ? 0.75 : 0.5,
+      where: tight ? 'out' : 'remote',
+      req: tight ? { car: true } : {},
       service: 'equipment',
       items: kitItems,
     });
@@ -286,14 +350,18 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
       service: 'companion',
       presence: true,
     });
+  }
+  // People who live alone get daily check-ins once round-the-clock coverage ends.
+  if (patient.livesAlone) {
+    const coveredUntil = presence.length ? Math.max(...presence.map(([, e]) => e)) : 0;
     for (let d = 1; d < 4; d++) {
       const am = clockRel(t0, d, 9);
-      if (am > 0 && am < WINDOW_H && am > firstMorning) {
+      if (am > 0 && am < WINDOW_H && am > coveredUntil) {
         needs.push({
           id: `checkin-${d}`,
           category: 'relief',
           title: `Morning check-in visit, ${dayName(t0, d)}`,
-          detail: 'Bring in the mail, check the fridge, make sure the walker path is clear.',
+          detail: 'Bring in the mail, check the fridge and supplies, make sure the path to the bathroom is clear.',
           because: [fromProfile(`${name} lives alone`)],
           window: [am - 1, am + 2],
           duration: 0.75,
@@ -301,6 +369,22 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
           req: {},
           service: 'companion',
           serviceCost: hoursCost(1),
+        });
+      }
+    }
+    for (let d = 0; d < 4; d++) {
+      const pm = clockRel(t0, d, 19.5);
+      if (pm > coveredUntil && pm < WINDOW_H) {
+        needs.push({
+          id: `call-${d}`,
+          category: 'relief',
+          title: `Evening check-in call, ${dayName(t0, d)}`,
+          detail: 'Five minutes: how are you feeling, did you eat, is anything running low for tomorrow?',
+          because: [fromProfile(`${name} lives alone`)],
+          window: [pm - 0.5, pm + 1.5],
+          duration: 0.25,
+          where: 'remote',
+          req: {},
         });
       }
     }
@@ -326,7 +410,7 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
       needs.push({
         id: `fu-confirm-${i}`,
         category: 'appointments',
-        title: `Confirm the time with ${doctor}'s office`,
+        title: `Confirm the time with ${officeOf(doctor)}`,
         detail: 'Ask for the exact time, the address and parking, and whether to bring the walker and a medication list.',
         because: [fromPapers(f)],
         window: fit(prepStart, Math.max(appt - 20, 6)),
@@ -351,12 +435,20 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
         times: [appt],
       });
     } else {
+      const pcp = /primary care/i.test(doctor) || /primary care|community health/i.test(f.quote);
+      const fq = program('fqhc');
       needs.push({
         id: `fu-book-${i}`,
-        category: 'appointments',
-        title: `Book the follow-up with ${doctor}${f.params.beyondPhrase ? ` (due within ${f.params.beyondPhrase})` : ''}`,
-        detail: 'Book it now and book the ride at the same time. Ride benefits need days of notice.',
-        because: [fromPapers(f)],
+        category: tight && pcp ? 'coverage' : 'appointments',
+        title:
+          tight && pcp
+            ? `Book a primary care visit at ${fq?.name.startsWith('Heartland') ? 'Heartland Community Health Center' : 'a community health center'}${f.params.beyondPhrase ? ` (due within ${f.params.beyondPhrase})` : ''}`
+            : `Book the follow-up with ${doctor}${f.params.beyondPhrase ? ` (due within ${f.params.beyondPhrase})` : ''}`,
+        detail:
+          tight && pcp
+            ? 'Health centers see everyone, with fees that slide down by income. Ask for a new patient visit this week, their pharmacy prices, and help with coverage.'
+            : 'Book it now and book the ride at the same time. Ride benefits need days of notice.',
+        because: tight && pcp ? [fromPapers(f), ...coverageWhy] : [fromPapers(f)],
         window: fit(0, 48),
         duration: 0.25,
         where: 'remote',
@@ -481,7 +573,20 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
   }
 
   const lift = one('lift-limit');
-  if (lift || noDrive || patient.livesAlone) {
+  if (tight) {
+    needs.push({
+      id: 'groceries',
+      category: 'meals',
+      title: `Pick up groceries for the week${dietLabel ? ` (${dietLabel.trim()})` : ''}`,
+      detail: 'A food pantry can cover most of it. Easy breakfasts, fruit, and things that don’t need much standing to cook.',
+      because: [...(diet ? [fromPapers(diet)] : []), ...coverageWhy].slice(0, 3),
+      window: fit(prepStart, 24),
+      duration: 1,
+      where: 'out',
+      req: { car: true },
+      items: [ITEMS.pantry],
+    });
+  } else if (lift || noDrive || patient.livesAlone) {
     needs.push({
       id: 'groceries',
       category: 'meals',
@@ -511,6 +616,97 @@ export function buildNeeds(input: CaseInput, findings: Finding[]): NeedsResult {
       service: 'homemaker',
       serviceCost: hoursCost(2.5),
     });
+  }
+
+  // Money and coverage
+  const noWork = one('no-work');
+  if (noWork) {
+    needs.push({
+      id: 'employer',
+      category: 'coverage',
+      title: `Tell ${name}’s employer and ask about sick pay or leave`,
+      detail: 'Ask about paid sick time, short-term disability, and whether the job is protected while off work. Get it in writing.',
+      because: [fromPapers(noWork)],
+      window: fit(0, 30),
+      duration: 0.5,
+      where: 'remote',
+      req: {},
+    });
+  }
+  if (tight) {
+    const fa = program('hospital-fa');
+    if (fa && fa.status !== 'unlikely') {
+      needs.push({
+        id: 'apply-fa',
+        category: 'coverage',
+        title: 'Apply for the hospital’s financial assistance',
+        detail: fa.next,
+        because: coverageWhy,
+        window: fit(0, 60),
+        duration: 1,
+        where: 'remote',
+        req: {},
+        beyond: true,
+      });
+    }
+    const snap = program('snap');
+    if (snap && snap.status !== 'unlikely' && (noWork || lowIncome)) {
+      needs.push({
+        id: 'apply-snap',
+        category: 'coverage',
+        title: 'Apply for food assistance and ask for the 7-day option',
+        detail: snap.next,
+        because: [...(noWork ? [fromPapers(noWork)] : []), ...coverageWhy].slice(0, 3),
+        window: fit(0, 48),
+        duration: 0.75,
+        where: 'remote',
+        req: {},
+        beyond: true,
+      });
+    }
+    const mcaid = program('medicaid');
+    const market = program('marketplace');
+    if (mcaid?.status === 'likely') {
+      needs.push({
+        id: 'apply-medicaid',
+        category: 'coverage',
+        title: `Apply for ${mcaid.name.split(' (')[0]}`,
+        detail: mcaid.next,
+        because: coverageWhy,
+        window: fit(0, 48),
+        duration: 1,
+        where: 'remote',
+        req: {},
+        beyond: true,
+      });
+    } else if (market && market.status !== 'unlikely') {
+      needs.push({
+        id: 'marketplace',
+        category: 'coverage',
+        title: market.when === 'Open now' ? 'Sign up for a Marketplace plan: open enrollment is on now' : `Plan for coverage: open enrollment ${market.when?.replace(/^Opens/, 'opens')}`,
+        detail: `${market.next} Free local helpers can compare plans and tax credits.`,
+        because: coverageWhy,
+        window: fit(0, 72),
+        duration: 0.5,
+        where: 'remote',
+        req: {},
+        beyond: true,
+      });
+    }
+    if (noWork && (lowIncome || uninsured)) {
+      needs.push({
+        id: 'bills-211',
+        category: 'coverage',
+        title: 'Call 211 about rent and utility help if paychecks stop',
+        detail: 'Ask about emergency rent, utility and prescription help in the home county. Many programs move faster if you call before a bill is late.',
+        because: [fromPapers(noWork), ...coverageWhy.slice(0, 1)],
+        window: fit(0, 72),
+        duration: 0.5,
+        where: 'remote',
+        req: {},
+        beyond: true,
+      });
+    }
   }
 
   // Coordination

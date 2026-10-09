@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { decode, parseDuration, sentences } from './decoder';
-import { SAMPLE_PAPERS } from './sample';
+import { SAMPLE_PAPERS, UNINSURED_PAPERS } from './sample';
 
 const rules = (text: string) => decode(text).map((f) => f.rule);
 
@@ -64,6 +64,15 @@ Follow a 2 gram low sodium diet.
 Cardiac rehab 2 times a week starting in 2 weeks.
 Do not be left alone for the first 24 hours.`;
     expect(rules(text).sort()).toEqual(['daily-weight', 'diet', 'supervision', 'therapy'].sort());
+  });
+
+  it('reads supplies, time off work and insulin', () => {
+    const found = decode(UNINSURED_PAPERS);
+    const supplies = found.filter((f) => f.rule === 'supplies').flatMap((f) => f.params.items as string[]);
+    expect(supplies).toEqual(['gauze', 'medical tape', 'saline', 'glucose meter', 'test strips', 'lancets']);
+    expect(found.find((f) => f.rule === 'no-work')?.label).toBe('Off work until cleared');
+    expect(found.find((f) => f.rule === 'prescriptions')?.params.insulin).toBe(true);
+    expect(found.find((f) => f.rule === 'supervision')?.params.hours).toBe(24);
   });
 
   it('returns nothing for empty papers', () => {

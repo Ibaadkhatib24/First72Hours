@@ -1,4 +1,5 @@
 import { decode } from './decoder';
+import { screen, type Screening } from './eligibility';
 import { fundItems, fundService, type Ctx, type Funding, type Range, type SourceOption } from './funding';
 import { buildNeeds, RATES } from './needs';
 import { blockAt, buildBlocks, fmtRange, parseLocal, relHours, toLocalIso, WINDOW_H, type Block } from './time';
@@ -89,6 +90,7 @@ export interface Plan {
   calls: Call[];
   unowned: string[];
   ctx: Ctx;
+  screening: Screening;
 }
 
 export interface Call {
@@ -170,7 +172,8 @@ export function planCase(input: CaseInput, opts: PlanOptions = {}): Plan {
   const blocks = buildBlocks(t0);
   const crew = input.crew;
   const device = findings.find((f) => f.rule === 'mobility-device')?.params.device as string | undefined;
-  const ctx: Ctx = { patient: input.patient, crew, plannedH, t0, device };
+  const screening = screen(input.patient, parseLocal(input.plannedAt));
+  const ctx: Ctx = { patient: input.patient, crew, plannedH, t0, device, fpl: screening.fpl };
 
   // 1. Who is physically there, hour by hour.
   const { shifts, duty } = buildRoster(blocks, presence, crew);
@@ -204,13 +207,14 @@ export function planCase(input: CaseInput, opts: PlanOptions = {}): Plan {
     taskLoad.set(id, taskLoad.get(id)! + d);
   };
   const unowned: string[] = [];
-  const ordered = needs.filter((n) => !n.presence).sort((a, b) => a.window[0] - b.window[0] || a.window[1] - b.window[1]);
+  // Earliest deadline first, so tight tasks (the ride home) aren't crowded out by flexible ones.
+  const ordered = needs.filter((n) => !n.presence).sort((a, b) => a.window[1] - b.window[1] || a.window[0] - b.window[0]);
 
   for (const need of ordered) {
     const items = need.items?.length ? fundItems(need, ctx, need.window[1]) : undefined;
     const serviceAt = need.beyond ? need.times?.[0] ?? need.window[0] : need.window[0];
     const serviceFunding = () =>
-      need.service && need.serviceCost ? fundService(need.service, need.serviceCost, ctx, serviceAt, need.medical) : undefined;
+      need.service && need.serviceCost ? fundService(need.service, need.serviceCost, ctx, serviceAt, need.medical, need.id) : undefined;
     const spend: Funding[] = items ? [items] : [];
 
     // Meals: decide meal by meal. Plan benefits first (once they can arrive), then whoever is there, then delivery.
@@ -485,5 +489,6 @@ export function planCase(input: CaseInput, opts: PlanOptions = {}): Plan {
     calls: callList,
     unowned,
     ctx,
+    screening,
   };
 }

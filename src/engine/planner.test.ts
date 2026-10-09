@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { mid, planCase } from './planner';
-import { sampleCase } from './sample';
+import { sampleCase, sampleMedicareCase } from './sample';
 import { toLocalIso } from './time';
 import type { CaseInput } from './types';
 
 // Tuesday 9am, so discharge is Tuesday 2pm and planning starts at 10am.
 const NOW = new Date(2026, 9, 13, 9, 0);
-const sample = () => sampleCase(NOW);
+const sample = () => sampleMedicareCase(NOW);
+const uninsured = () => sampleCase(NOW);
 
-describe('planCase on the sample family', () => {
+describe('planCase on the Medicare sample family', () => {
   const plan = planCase(sample());
 
   it('every need cites a reason', () => {
@@ -146,5 +147,63 @@ describe('planCase edge cases', () => {
     const plan = planCase(input);
     expect(plan.findings).toEqual([]);
     expect(plan.needs.length).toBeGreaterThan(0);
+  });
+});
+
+describe('planCase on the uninsured sample family', () => {
+  const plan = planCase(uninsured());
+  const owner = (id: string) => plan.assignments[id]?.owner;
+
+  it('reads the uninsured papers', () => {
+    const rules = plan.findings.map((f) => f.rule);
+    for (const r of ['mobility-device', 'no-driving', 'no-work', 'supervision', 'supplies', 'diet', 'prescriptions', 'follow-up']) {
+      expect(rules).toContain(r);
+    }
+    // Driving and work restrictions are not mistaken for appointments.
+    expect(plan.findings.filter((f) => f.rule === 'follow-up').map((f) => f.params.doctor)).toEqual(['the wound clinic', 'a primary care doctor']);
+  });
+
+  it('adds the case manager ask and a cash-price check before pickup', () => {
+    expect(owner('ask-hospital')).toEqual({ kind: 'crew', memberId: 'marcus' });
+    expect(plan.assignments['rx-price'].at).toBeLessThan(plan.assignments.rx.at);
+  });
+
+  it('gets her home with family instead of a paid ride', () => {
+    expect(owner('arrival')).toEqual({ kind: 'crew', memberId: 'tasha' });
+    expect(owner('rx')).toEqual(owner('arrival'));
+  });
+
+  it('sends the follow-up to a community health center near Lawrence', () => {
+    const book = plan.needs.find((n) => n.id === 'fu-book-1')!;
+    expect(book.title).toMatch(/Heartland Community Health Center/);
+    expect(book.category).toBe('coverage');
+  });
+
+  it('a church friend drives to the wound clinic for free', () => {
+    expect(owner('fu-ride-0')).toEqual({ kind: 'crew', memberId: 'gloria' });
+  });
+
+  it('counts the food pantry, not wishful benefits', () => {
+    const pantry = plan.calls.find((c) => c.sourceId === 'food-pantry')!;
+    expect(pantry.status).toBe('counted');
+    for (const c of plan.calls.filter((x) => x.status === 'counted')) expect(['yes', 'likely']).toContain(c.eligibility);
+    expect(plan.calls.find((c) => c.sourceId === 'medicare-dme')).toBeUndefined();
+  });
+
+  it('lists free equipment as too slow for day one but worth starting', () => {
+    const kee = plan.calls.find((c) => c.sourceId === 'loan-closet')!;
+    expect(kee.name).toMatch(/Kansas Equipment Exchange/);
+    expect(kee.status).toBe('later');
+  });
+
+  it('adds money and coverage tasks for someone off work without insurance', () => {
+    const ids = plan.needs.map((n) => n.id);
+    for (const id of ['employer', 'apply-fa', 'apply-snap', 'marketplace', 'bills-211']) expect(ids).toContain(id);
+    expect(plan.needs.find((n) => n.id === 'marketplace')!.title).toMatch(/Nov 1/);
+  });
+
+  it('checks in daily once the first 24 hours are covered', () => {
+    expect(plan.needs.some((n) => n.id.startsWith('checkin-'))).toBe(true);
+    expect(plan.needs.some((n) => n.id.startsWith('call-'))).toBe(true);
   });
 });

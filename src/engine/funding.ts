@@ -15,6 +15,8 @@ export interface Ctx {
   t0: Date;
   /** Walker, cane, wheelchair... from the papers, so scripts can mention it. */
   device?: string;
+  /** Household income as a percent of the poverty line, if known. */
+  fpl?: number;
 }
 
 export interface Source {
@@ -24,6 +26,8 @@ export interface Source {
   services?: ServiceKey[];
   items?: (it: LineItem) => boolean;
   medicalOnly?: boolean;
+  /** Only for these needs (e.g. the hospital can help with the ride home, not next week's rides). */
+  onlyFor?: string[];
   eligible: (c: Ctx) => Eligibility;
   coverPct: number;
   /** Relative hour when this source can first deliver. */
@@ -48,6 +52,8 @@ const agingLine = (c: Ctx) =>
     : { who: 'Eldercare Locator (finds the local Area Agency on Aging)', phone: '1-800-677-1116' };
 const memberServices = { who: 'Member services, the number on the back of the plan card' };
 const backupMember = (c: Ctx) => c.crew.find((m) => m.backupCare);
+const uninsured = (c: Ctx) => c.patient.insurance === 'none';
+const tight = (c: Ctx) => uninsured(c) || (c.fpl !== undefined && c.fpl <= 200);
 const itemNames = (need: Need, f: (it: LineItem) => boolean) =>
   (need.items ?? []).filter(f).map((i) => i.name.toLowerCase()).join(', ');
 
@@ -220,7 +226,63 @@ export const SOURCES: Source[] = [
     bring: ['Employee ID', 'Address, times and care needs'],
     caveat: 'Many employers subsidize a few backup care days a year. Expect a small hourly copay and about a day’s notice.',
   },
+  {
+    id: 'hospital-help',
+    name: () => 'Hospital case manager or social worker',
+    kind: 'program',
+    services: ['ride', 'wheelchair-ride'],
+    items: (it) => !!(it.dme || it.supply),
+    onlyFor: ['arrival', 'device'],
+    eligible: (c) => (c.plannedH < 0 && (tight(c) || hasMedicaid(c)) ? 'maybe' : 'no'),
+    coverPct: 1,
+    readyAt: (c) => c.plannedH + 1,
+    contact: () => ({ who: 'The case manager or social worker on the hospital floor' }),
+    script: (c) =>
+      `Hi, I’m helping ${c.patient.name} go home today${uninsured(c) ? `, and ${first(c)} doesn’t have insurance` : ''}. Is there help for a ride home${c.device ? ` or a ${c.device} to take home` : ''}? Can ${first(c)} leave with a starter supply of the new medicines? And can we get the financial assistance application and a referral to a community health center?`,
+    bring: ['The discharge papers', 'A list of who can help and when'],
+    caveat: 'What hospitals can give varies. Ride vouchers, loaner equipment and starter medicines are common asks for patients without insurance. It only works before discharge.',
+  },
+  {
+    id: 'loan-closet',
+    name: (c) => (kansas(c) ? 'Kansas Equipment Exchange (free refurbished equipment)' : 'Medical equipment loan closet'),
+    kind: 'program',
+    items: (it) => !!(it.dme || it.supply) && !/strips|lancets|gauze|tape|saline|needles|syringes|sharps|dressing|bandage/i.test(it.name),
+    eligible: (c) => (tight(c) ? 'maybe' : 'no'),
+    coverPct: 1,
+    readyAt: (c) => c.plannedH + 48,
+    contact: (c) => (kansas(c) ? { who: 'Assistive Technology for Kansans (KU)', phone: '620-421-8367' } : { who: 'Dial 211 for a loan closet nearby', phone: '211' }),
+    script: (c, need) =>
+      `Hi, ${c.patient.name} just came home from the hospital and needs a ${itemNames(need, (i) => !!(i.dme || i.supply)).split(', ').slice(0, 3).join(', ')}. ${uninsured(c) ? 'There’s no insurance to cover it. ' : ''}What do you have near ZIP ${c.patient.zip || 'code'}, and how do we pick it up?`,
+    bring: ['ZIP code', 'Height and weight for sizing'],
+    caveat: 'Free, but what’s on hand depends on donations, and pickup usually takes a couple of days. Worth it for anything needed for weeks.',
+  },
+  {
+    id: 'food-pantry',
+    name: () => 'Food pantry',
+    kind: 'community',
+    items: (it) => !!it.food,
+    eligible: (c) => (c.fpl !== undefined && c.fpl <= 200 ? 'likely' : uninsured(c) ? 'maybe' : 'no'),
+    coverPct: 1,
+    readyAt: (c) => c.plannedH + 12,
+    contact: () => ({ who: 'Dial 211 for a pantry open today or tomorrow', phone: '211' }),
+    script: (c) => `Hi, I’m looking for a food pantry open today or tomorrow near ZIP ${c.patient.zip || 'code'}. My family member just got out of the hospital and can’t work for a while.`,
+    bring: ['ID and proof of address (some pantries ask)', 'Bags or boxes'],
+    caveat: 'Most pantries serve anyone who says they need food. Hours vary, so call first.',
+  },
   // Community
+  {
+    id: 'volunteer',
+    name: () => 'Friends, neighbors or a faith community',
+    kind: 'community',
+    services: ['companion', 'homemaker'],
+    eligible: () => 'maybe',
+    coverPct: 1,
+    readyAt: (c) => c.plannedH + 12,
+    contact: () => ({ who: 'Friends, neighbors, a church or community group' }),
+    script: (c, _need, at) => `Hi! ${first(c)} just got home from the hospital and needs someone there ${fmtWhen(c.t0, at)} for a few hours. Could you sit with ${first(c)}? I can send details.`,
+    bring: ['The address and the times'],
+    caveat: 'Free, and often the fastest fix for a short gap. It depends on people saying yes, so the plan doesn’t count on it.',
+  },
   {
     id: 'meal-train',
     name: () => 'Meal train from friends, neighbors or a faith community',
@@ -385,6 +447,7 @@ export function fundItems(need: Need, c: Ctx, at: number): Funding {
   const options: SourceOption[] = [];
   for (const s of SOURCES) {
     if (!s.items) continue;
+    if (s.onlyFor && !s.onlyFor.includes(need.id)) continue;
     const idx = items.map((it, i) => (s.items!(it) ? i : -1)).filter((i) => i >= 0);
     if (!idx.length) continue;
     const o = option(s, c, at);
@@ -411,7 +474,7 @@ export function fundItems(need: Need, c: Ctx, at: number): Funding {
 }
 
 /** Money and a provider for a service when no family member can do it. */
-export function fundService(service: ServiceKey, cost: Range, c: Ctx, at: number, medical = false): Funding {
+export function fundService(service: ServiceKey, cost: Range, c: Ctx, at: number, medical = false, needId?: string): Funding {
   const layers: Layer[] = [];
   const options: SourceOption[] = [];
   let provider: SourceOption | undefined;
@@ -419,6 +482,7 @@ export function fundService(service: ServiceKey, cost: Range, c: Ctx, at: number
   for (const s of SOURCES) {
     if (!s.services?.includes(service)) continue;
     if (s.medicalOnly && !medical) continue;
+    if (s.onlyFor && (!needId || !s.onlyFor.includes(needId))) continue;
     const o = option(s, c, at);
     if (o.eligibility === 'no') continue;
     options.push(o);

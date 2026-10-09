@@ -168,8 +168,13 @@ const RULES: Array<{ rule: FindingRule; fn: RuleFn; multi?: boolean }> = [
     rule: 'follow-up',
     multi: true,
     fn: (s) => {
-      if (!/\bfollow[- ]?up\b|\bappointment\b|\bsee (dr\.?|doctor|your (surgeon|doctor|cardiologist|provider|pcp))\b|\bcheck[- ]up\b/i.test(s)) return null;
+      if (
+        !/\bfollow[- ]?up\b|\bappointment\b|\bsee (dr\.?|doctor|your (surgeon|doctor|cardiologist|provider|pcp))\b|\bsee an? (primary care )?(doctor|provider)\b|\bcheck[- ]up\b|\breturn to (the |your )?([\w-]+ )?(clinic|office)\b/i.test(s)
+      )
+        return null;
       if (/\b(physical|occupational) therapy\b|\bhome health\b|\bnurse will\b/i.test(s)) return null;
+      // "No driving until you are cleared at your follow-up" is about driving, not a visit.
+      if (/\bdriv(e|ing)\b|\breturn to work\b|\buntil (you are |you're )?cleared\b/i.test(s)) return null;
       const doc = s.match(/\bDr\.?\s+([A-Z][a-zA-Z'-]+)/);
       const spec = s.match(/\(([^)]{3,40})\)/);
       const time = s.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/i);
@@ -194,7 +199,17 @@ const RULES: Array<{ rule: FindingRule; fn: RuleFn; multi?: boolean }> = [
       const wd = s.match(/\b(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
       if (wd) weekday = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'].indexOf(wd[1].toLowerCase());
       const role = s.match(/\b(?:your|the)\s+(surgeon|doctor|cardiologist|primary care (?:doctor|provider)|PCP|provider|specialist|[a-z]+ologist)\b/i);
-      const who = doc ? `Dr. ${doc[1]}` : role ? `the ${role[1].toLowerCase() === 'pcp' ? 'primary care doctor' : role[1].toLowerCase()}` : 'the doctor';
+      const clinic = s.match(/\b(?:the|your)\s+((?:[\w-]+\s+)?clinic)\b/i);
+      const primary = /\bprimary care\b/i.test(s);
+      const who = doc
+        ? `Dr. ${doc[1]}`
+        : clinic
+          ? `the ${clinic[1].toLowerCase()}`
+          : primary
+            ? 'a primary care doctor'
+            : role
+              ? `the ${role[1].toLowerCase() === 'pcp' ? 'primary care doctor' : role[1].toLowerCase()}`
+              : 'the doctor';
       const when =
         dayOffset !== undefined
           ? dayOffset === 1
@@ -217,7 +232,7 @@ const RULES: Array<{ rule: FindingRule; fn: RuleFn; multi?: boolean }> = [
     rule: 'prescriptions',
     fn: (s) =>
       /\bprescriptions?\b.*\b(sent|called in|pick ?up|ready|fill)\b|\bpick up (your )?(new )?(meds|medications?|prescriptions?)\b|\bpharmacy\b/i.test(s)
-        ? { label: 'New prescriptions to pick up' }
+        ? { label: /\binsulin\b/i.test(s) ? 'New prescriptions to pick up, including insulin' : 'New prescriptions to pick up', params: { insulin: /\binsulin\b/i.test(s) } }
         : null,
   },
   {
@@ -243,6 +258,28 @@ const RULES: Array<{ rule: FindingRule; fn: RuleFn; multi?: boolean }> = [
   {
     rule: 'daily-weight',
     fn: (s) => (/\bweigh yourself\b|\bdaily weights?\b|\bweight every (day|morning)\b/i.test(s) ? { label: 'Needs a scale for daily weights' } : null),
+  },
+  {
+    rule: 'supplies',
+    multi: true,
+    fn: (s) => {
+      const items = uniq(
+        [...s.matchAll(/\b(glucose meter|blood sugar meter|glucometer|test strips|lancets|gauze|dressing supplies|bandages|medical tape|saline|pen needles|syringes|sharps container)\b/gi)].map((m) => m[1]),
+      );
+      const sugar = /\b(check|test) your blood (sugar|glucose)\b/i.test(s);
+      if (!items.length && !sugar) return null;
+      const list = items.length ? items : ['glucose meter', 'test strips', 'lancets'];
+      return { label: `Supplies to buy: ${listJoin(list)}`, params: { items: list } };
+    },
+  },
+  {
+    rule: 'no-work',
+    fn: (s) => {
+      if (!/\b(work|job)\b/i.test(s) || !/\b(no|not|don'?t|do not|until|off)\b/i.test(s) || /\bhomework|housework|work(s|ing)? (with|on) your\b/i.test(s)) return null;
+      if (!/\b(return to work|go back to work|off work|out of work|stay home from work|not work)\b/i.test(s)) return null;
+      const dur = parseDuration(s);
+      return { label: dur ? `Off work for ${dur.phrase}` : 'Off work until cleared', params: { hours: dur?.hours ?? 0 } };
+    },
   },
   {
     rule: 'no-housework',
@@ -280,6 +317,11 @@ export function decode(papers: string): Finding[] {
       if (!r.multi && seen.has(r.rule)) continue;
       const hit = r.fn(text);
       if (!hit) continue;
+      if (r.rule === 'supplies') {
+        const key = [...(hit.params?.items as string[])].sort().join('|');
+        if (seenFollowups.has(`supplies:${key}`)) continue;
+        seenFollowups.add(`supplies:${key}`);
+      }
       if (r.rule === 'follow-up') {
         const key = String(hit.params?.doctor ?? '') + String(hit.params?.dayOffset ?? hit.params?.beyondPhrase ?? '');
         if (seenFollowups.has(key)) continue;

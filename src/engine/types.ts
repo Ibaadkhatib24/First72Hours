@@ -7,7 +7,8 @@ export type Category =
   | 'equipment'
   | 'relief'
   | 'coordination'
-  | 'providers';
+  | 'providers'
+  | 'coverage';
 
 export type Insurance =
   | 'medicare' // Original Medicare (with or without a supplement)
@@ -33,6 +34,12 @@ export interface Patient {
   veteran: boolean;
   insurance: Insurance;
   hasHsaFsa: boolean;
+  /** People in the tax household, for poverty-line math. */
+  householdSize: number;
+  /** Gross monthly household income, or null if not shared. */
+  monthlyIncome: number | null;
+  /** Has children under 19 at home (matters for Medicaid in non-expansion states). */
+  parent: boolean;
 }
 
 export interface CrewMember {
@@ -80,7 +87,9 @@ export type FindingRule =
   | 'diet'
   | 'bending'
   | 'daily-weight'
-  | 'no-housework';
+  | 'no-housework'
+  | 'supplies'
+  | 'no-work';
 
 export interface Finding {
   id: string;
@@ -118,6 +127,8 @@ export interface LineItem {
   supply?: boolean;
   /** Usually HSA/FSA eligible when medically needed. */
   hsa?: boolean;
+  /** Groceries a food pantry can cover. */
+  food?: boolean;
 }
 
 export interface Need {

@@ -186,7 +186,7 @@ src/
   components/    Start, Intake, PlanView (tabs), Home, HeadsUpList, Runway, Ledger, WhoPays,
                  CareCoverage, CrewCards, Providers, Fridge
   ui/            formatting, messages, view helpers
-  styles/        one stylesheet with light and dark tokens
+  styles/        one stylesheet (always light; dark tokens kept for a future toggle)
 docs/            pitch script, decision rules, brand kit, screenshots
 ```
 

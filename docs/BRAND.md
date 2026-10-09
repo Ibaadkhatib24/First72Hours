@@ -8,6 +8,8 @@ First72 should feel calm, specific and practical. It speaks from the caregiver's
 
 The palette is time of day. The night, dawn, day and dusk colors draw the runway sky. Navy is the anchor, and every other color means one thing.
 
+The app always uses the light theme, even on devices set to dark mode (`data-theme="light"` on the `<html>` tag). The dark values are kept in the stylesheet for a future toggle.
+
 | Token | Light | Dark | Use |
 |---|---|---|---|
 | `ink` | `#1A2240` | `#EEF1FA` | Text, headlines, primary button fill |

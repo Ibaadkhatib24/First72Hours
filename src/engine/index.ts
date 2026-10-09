@@ -12,3 +12,5 @@ export type { Program, ProgramStatus, Screening } from './eligibility';
 export * from './share';
 export { headsUp } from './flags';
 export type { Flag, FlagLevel, HeadsUp, TabId } from './flags';
+export { CLAUDE_MODEL, localAnswer, planBrief, safetyReply, suggestions, SYSTEM_PROMPT } from './assistant';
+export type { AskCtx, Reply, ReplyLink } from './assistant';

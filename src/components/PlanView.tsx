@@ -3,6 +3,7 @@ import { sourceById, type CaseInput, type Plan, type Status, type TabId } from '
 import { useNow } from '../state';
 import { moneyRange } from '../ui/format';
 import { makeView } from '../ui/view';
+import { Assistant, type ChatMsg } from './Assistant';
 import { CareCoverage } from './CareCoverage';
 import { CrewCards } from './CrewCards';
 import { Fridge } from './Fridge';
@@ -62,6 +63,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
   const [tab, setTab] = useState<TabId>(tabFromHash);
   const [sharing, setSharing] = useState(false);
   const [askNew, setAskNew] = useState(false);
+  // The conversation survives switching tabs.
+  const [chat, setChat] = useState<ChatMsg[]>([]);
   const [toast, setToast] = useState<string | null>(null);
   const [highlight, setHighlight] = useState<string | undefined>();
   const [onlyMine, setOnlyMine] = useState(!!me);
@@ -192,6 +195,8 @@ export function PlanView({ plan, input, status, me, demo, onStatus, onInput, onE
             )}
 
             {tab === 'home' ? <Home view={view} demo={demo} onEdit={onEdit} /> : <PageHead tab={tab} view={view} />}
+
+            {tab === 'ask' && <Assistant view={view} chat={chat} setChat={setChat} />}
 
             {tab === 'alerts' && <HeadsUpPage view={view} />}
 

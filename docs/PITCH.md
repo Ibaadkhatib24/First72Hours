@@ -44,13 +44,13 @@ Click **Missouri**: "Kansas hasn't expanded Medicaid, so Denise can't get KanCar
 
 Click back to **Kansas**.
 
-## 2:25 Helpers (20 seconds)
+## 2:25 Ask (20 seconds)
 
-Click the **Helpers** tab.
+Click the **Ask** tab and tap **What does Marcus need to do?**
 
-"Marcus can't drive from Wichita, so he gets the phone calls and applications. Gloria drives to the wound clinic on her free morning. Each person gets just their part by text."
+"Marcus can't drive from Wichita, so he gets the phone calls and applications. Caregivers can just ask, by typing or talking."
 
-Tap **Text Marcus their list** (or show it on the phone).
+Type **How much insulin should she take?** "And it never plays doctor. Medical questions get the papers' own words and the number to call. Add a Claude key and it handles anything else about the plan."
 
 ## 2:45 Close (15 seconds)
 
@@ -66,10 +66,12 @@ Tap **Bigger text** once. "Big text for anyone who needs it. No server: the plan
 
 **How does Heads up decide what to flag?** Rules over the finished plan, not guesses. A flag needs a reason in the plan itself: an uncovered hour, a prescription in the papers, a fall-risk line, a follow-up with no family driver, a helper over the hour limit. Each one shows the line from the papers that caused it and clears itself when the task is marked done.
 
+**Is the chatbot AI?** Both. With no setup it answers from the plan on the device, so it works offline and costs nothing. With a Claude API key, open questions go to Claude with the plan as context. Medical and emergency questions are caught first and never sent: they get the papers' own words, the number on the papers, 911 or 988.
+
 **What about people with insurance?** Same engine. Click "Or see Rosa" on the start screen: Medicare Advantage meals, rides and equipment, each checked against how much notice it needs.
 
 **Why not just use AI to read the papers?** The decoder is deliberately rule-based so every output is explainable and cites its source. An LLM pass is the next step, under the same rule: it has to quote the line, or the suggestion is dropped.
 
 **Who would pay for this?** Hospitals carry the cost of readmissions and uncompensated care. A plan started at admission catches gaps before discharge and gets uninsured patients into charity care, community clinics and coverage. Health systems, community health centers and United Way 211 are natural partners.
 
-**What about privacy?** No accounts, no backend, nothing sent anywhere. Income and health details stay on the device. Sharing puts the plan in the URL fragment, which browsers never send to servers.
+**What about privacy?** No accounts, no backend, nothing sent anywhere by default. Income and health details stay on the device. Sharing puts the plan in the URL fragment, which browsers never send to servers. The only exception is opt-in: a Claude key on the Ask tab sends non-medical questions and the plan to Anthropic.

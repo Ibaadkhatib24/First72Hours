@@ -8,7 +8,7 @@ import type { Need } from './types';
 // fix it. A flag clears itself when the task behind it is marked done.
 
 export type FlagLevel = 'now' | 'soon' | 'watch';
-export type TabId = 'home' | 'alerts' | 'schedule' | 'todo' | 'money' | 'coverage' | 'helpers' | 'hire' | 'later';
+export type TabId = 'home' | 'ask' | 'alerts' | 'schedule' | 'todo' | 'money' | 'coverage' | 'helpers' | 'hire' | 'later';
 
 export interface Flag {
   id: string;

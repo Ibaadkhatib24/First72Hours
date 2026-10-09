@@ -45,6 +45,7 @@ export function Home({ view, demo, onEdit }: { view: View; demo: boolean; onEdit
   const left = tasks.filter((n) => status[n.id] !== 'done').length;
 
   const tileStatus: Record<string, string> = {
+    ask: 'Questions about the plan, any time',
     alerts: heads.open ? `${heads.open} to look at` : 'Nothing open',
     schedule: openGaps.length ? `${openGaps.length} ${openGaps.length === 1 ? 'time' : 'times'} with nobody there` : 'Every hour covered',
     todo: `${left} of ${tasks.length} left`,

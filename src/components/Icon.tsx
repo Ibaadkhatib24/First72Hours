@@ -1,6 +1,6 @@
 import type { Category } from '../engine';
 
-type Name = Category | 'phone' | 'copy' | 'share' | 'print' | 'check' | 'clock' | 'alert' | 'edit' | 'camera' | 'message' | 'chevron' | 'plus' | 'x' | 'lock' | 'home' | 'money' | 'back' | 'text' | 'list' | 'week';
+type Name = Category | 'phone' | 'copy' | 'share' | 'print' | 'check' | 'clock' | 'alert' | 'edit' | 'camera' | 'message' | 'chevron' | 'plus' | 'x' | 'lock' | 'home' | 'money' | 'back' | 'text' | 'list' | 'week' | 'mic' | 'send' | 'speaker';
 
 const PATHS: Record<Name, React.ReactNode> = {
   transport: (
@@ -131,6 +131,19 @@ const PATHS: Record<Name, React.ReactNode> = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  mic: (
+    <>
+      <rect x="9" y="3.5" width="6" height="11" rx="3" />
+      <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v2.5M9 20.5h6" />
+    </>
+  ),
+  send: <path d="M4.5 12 19.5 5l-4 14.5-3.5-6.5-7.5-1Z M12 13l7.5-8" />,
+  speaker: (
+    <>
+      <path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3Z" />
+      <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+    </>
+  ),
   x: <path d="M6 6l12 12M18 6 6 18" />,
   lock: (
     <>

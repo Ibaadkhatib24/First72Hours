@@ -129,6 +129,17 @@ Flags sort open first, then now, soon, keep an eye on. Lines from the papers tha
 
 Why these: nearly a quarter of patients have an adverse event after discharge and about half are preventable or ameliorable ([CMAJ 2004](https://www.cmaj.ca/content/170/3/353)), and fall injuries are the third most common reason older adults are readmitted within 30 days ([JAMA Network Open 2019](https://pmc.ncbi.nlm.nih.gov/articles/PMC6632136)).
 
+## 8. Ask
+
+Every question goes through the same steps, in order:
+
+1. **Safety check, always first and always on the device.** Emergency words ("can't breathe", "chest pain", "passed out", "hit her head") get **call 911 now** and the papers' warning signs. Crisis words get 988. Medical questions (doses, side effects, fever, swelling, blood sugar readings, "is this normal", "should she stop") get "I can't answer medical questions", the matching lines from the papers and the number on the papers. These are never sent to Claude, not even later as chat history.
+2. **A helper's name** ("What does Marcus need to do?") gets that person's shifts and open tasks.
+3. **Topics from the plan:** who's there (now, tonight, tomorrow or a day name), gaps, risks, coverage, money, medicines, rides, meals, equipment, caregiver strain, calls, work and bills, next week, and what to do next. "Can she..." questions put the matching lines from the papers first.
+4. **No match:** without a key, it says so and suggests questions it can answer. With a Claude key, the question goes to Claude.
+
+With a key, non-medical questions go to Claude (`claude-haiku-5-5`, streamed straight from the browser) with a summary of the plan: the papers' exact quotes, shifts, tasks with owners and status, costs, calls with numbers, the coverage screen and open flags. The instructions tell Claude to answer only from the plan, never invent a number or program, write short and plain, and never give medical advice. If Claude fails (bad key, no internet, busy), the plan's own answer is shown with a note saying why.
+
 ## Prices used for estimates
 
 Kansas City area ranges: home care $30 to $38 an hour, rides $15 to $35 one way, wheelchair van $50 to $100 one way, meals $10 to $14 each, and item prices for each piece of equipment in `src/engine/needs.ts`.

@@ -2156,12 +2156,12 @@ textarea.input {
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   min-height: 54px;
-  padding: 0 14px;
+  padding: 0 9px;
   text-decoration: none;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15.5px;
   color: var(--ink-2);
   border-bottom: 3px solid transparent;
 }
@@ -2948,4 +2948,283 @@ textarea.input {
 
 .nowrap {
   white-space: nowrap;
+}
+
+/* ───────── Ask ───────── */
+
+.ask {
+  display: grid;
+  gap: 16px;
+  max-width: 860px;
+}
+
+.chat {
+  display: grid;
+  gap: 14px;
+}
+
+.msg {
+  max-width: min(720px, 100%);
+  padding: 14px 18px;
+  border-radius: 20px;
+  font-size: 17px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.msg.user {
+  justify-self: end;
+  background: var(--ink);
+  color: var(--paper);
+  border-bottom-right-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.msg.bot {
+  justify-self: start;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+
+.msg.bot.safety {
+  border-color: color-mix(in srgb, var(--gap) 55%, var(--line));
+  box-shadow: inset 4px 0 0 var(--gap);
+}
+
+.msg.bot.safety .msg-who {
+  color: var(--gap);
+}
+
+.msg-who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-3);
+}
+
+.msg p + p,
+.msg p + ul,
+.msg ul + p {
+  margin-top: 10px;
+}
+
+.msg ul {
+  margin: 6px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 6px;
+}
+
+.msg-small {
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.msg-note {
+  font-size: 15px;
+  color: var(--warn);
+  font-weight: 650;
+}
+
+.msg-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.msg-actions:empty {
+  display: none;
+}
+
+.suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.suggest .btn {
+  white-space: normal;
+  text-align: left;
+}
+
+.suggest-more {
+  gap: 8px;
+}
+
+.typing {
+  display: inline-flex;
+  gap: 5px;
+  padding: 8px 0;
+}
+
+.typing i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .typing i {
+    animation: typing 1s infinite ease-in-out;
+  }
+
+  .typing i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .typing i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes typing {
+    0%,
+    100% {
+      opacity: 0.25;
+      transform: translateY(0);
+    }
+    50% {
+      opacity: 0.9;
+      transform: translateY(-3px);
+    }
+  }
+}
+
+.composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+  padding: 12px 0 16px;
+  background: var(--ground);
+}
+
+.composer textarea {
+  width: 100%;
+  min-height: 56px;
+  max-height: 180px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--ink-3);
+  border-radius: 18px;
+  background: var(--paper);
+  font-size: 18px;
+  line-height: 1.4;
+  resize: none;
+  field-sizing: content;
+}
+
+.composer textarea:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.composer .btn {
+  min-height: 56px;
+  font-size: 17px;
+}
+
+.composer .btn.listening {
+  border-color: var(--gap);
+  color: var(--gap);
+}
+
+.ask-settings {
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--paper);
+}
+
+.ask-settings summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.ask-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.ask-settings summary::after {
+  content: '';
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.ask-settings[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.ask-settings-body {
+  display: grid;
+  gap: 12px;
+  padding: 0 16px 16px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.ask-settings .hint {
+  font-size: 14px;
+  color: var(--ink-3);
+}
+
+.ask-settings a {
+  color: var(--focus);
+  font-weight: 700;
+}
+
+.ask-key-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ask-key-row .input {
+  flex: 1 1 260px;
+  width: auto;
+}
+
+.ask-key-on {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--good);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .msg {
+    font-size: 16px;
+    padding: 12px 14px;
+  }
+
+  .composer {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .composer textarea,
+  .composer button:only-of-type {
+    grid-column: 1 / -1;
+  }
+
+  .composer .btn {
+    min-height: 52px;
+  }
 }

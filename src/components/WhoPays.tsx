@@ -1,4 +1,4 @@
-import { mid, sourceById, type Call } from '../engine';
+import { mid, niceDeadline, sourceById, type Call } from '../engine';
 import { about, moneyRange } from '../ui/format';
 import type { View } from '../ui/view';
 import { Icon } from './Icon';
@@ -63,13 +63,6 @@ function CallCard({ call, view }: { call: Call; view: View }) {
   );
 }
 
-/** Nobody should be told to call at 2am: move overnight deadlines back to 9pm the evening before. */
-function niceDeadline(h: number, t0: Date) {
-  const clock = (((t0.getHours() + t0.getMinutes() / 60 + h) % 24) + 24) % 24;
-  if (clock >= 21.5) return h - (clock - 21);
-  if (clock < 7) return h - (clock + 3);
-  return h;
-}
 
 export function WhoPays({ view }: { view: View }) {
   const { plan, input } = view;

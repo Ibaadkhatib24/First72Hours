@@ -25,6 +25,7 @@ Most tools for this are directories or checklists. First72 is a **planner**. You
 - **What it costs, what's free, and whether that free help can start in time**
 - **What the patient likely qualifies for**: charity care on the hospital bill, a sliding-fee health center, food assistance, Medicaid or a Marketplace plan
 - **What could go wrong**, flagged before it does, with one plain next step for each
+- **Answers to questions in plain words**, typed or spoken, on the Ask tab
 
 ![Denise's plan home page: one sentence on where things stand, the top heads-up flags, and what's next](docs/screenshots/plan.png)
 
@@ -111,6 +112,7 @@ A caregiver might be 19 or 79, on a cracked phone in a hospital hallway. So the 
 | Tab | What's on it |
 |---|---|
 | **Home** | One sentence on where things stand, the top 3 heads-up flags, the next 3 tasks and a tile for everything else |
+| **Ask** | A chat helper that answers questions about the plan |
 | **Heads up** | What could go wrong and what to do |
 | **Schedule** | Who is with the patient each hour |
 | **To-do** | Every task in time order ("Before leaving the hospital", "Friday, discharge day"...), each marked To do, Asked or Done |
@@ -124,9 +126,20 @@ Click Helpers and you only see helpers. Every page has a "Home" link at the top,
 
 <img src="docs/screenshots/mobile.png" alt="The plan home page on a phone" width="320">
 
-### 9. Private by design
+### 9. Ask in your own words
 
-There is no backend. The plan is computed in the browser, saved on the device, and shared by putting the whole plan in the link's `#fragment`, which browsers never send to a server. For anyone not on the group text, there's a printable **fridge sheet** with the shift table, the day's tasks and the numbers to call.
+The **Ask** tab is a chat helper for the caregiver. Tap a suggested question or type (or speak) your own: "Who is with Mom tonight?", "What does Marcus need to do?", "How much will this cost?", "I'm exhausted, what can I do?"
+
+- **Works with no setup.** Out of the box, answers are worked out from the plan on the device: real names, times, costs and phone numbers, with buttons that jump to the right task or tab. No key, no network, nothing sent anywhere.
+- **Claude for anything else.** Paste a Claude API key and open-ended questions ("Can I give her a snack before bed?") go to Claude with the plan as context. The answer streams in, and if Claude can't be reached the plan's own answer shows instead.
+- **Never medical advice.** Questions about doses, symptoms or "is this normal" never go to Claude, not even as chat history. They get the papers' own words, the number on the papers and 911. Emergencies ("she can't breathe") get **call 911 now** first, and a crisis gets 988.
+- **Built for any age.** Big buttons, large text, a **Speak** button for voice input and **Read aloud** on every answer.
+
+![The Ask tab: a plan answer with buttons to the to-do list, and a medical question answered with the papers' own words and who to call](docs/screenshots/ask.png)
+
+### 10. Private by design
+
+There is no backend. The plan is computed in the browser, saved on the device, and shared by putting the whole plan in the link's `#fragment`, which browsers never send to a server. The one opt-in exception: if someone adds a Claude key on the Ask tab, their non-medical questions and the plan details go straight from the browser to Anthropic to write the answer. The key stays in that browser. For anyone not on the group text, there's a printable **fridge sheet** with the shift table, the day's tasks and the numbers to call.
 
 ## How it covers the challenge
 
@@ -149,6 +162,7 @@ flowchart LR
   A --> F[Funding<br/>eligibility x lead time]
   F --> O[Plan<br/>runway, tasks, call list, totals]
   O --> H[Heads up<br/>risks + what to do]
+  O --> Q[Ask<br/>answers from the plan, optional Claude]
 ```
 
 All of it lives in `src/engine`, as plain TypeScript with no UI dependencies, and it's covered by tests.
@@ -158,6 +172,7 @@ All of it lives in `src/engine`, as plain TypeScript with no UI dependencies, an
 - **`planner.ts`** builds the shift roster, assigns every task to the best person without double-booking anyone, splits meals meal by meal, finds gaps, measures each helper's load, and builds the call list.
 - **`funding.ts`** has every source's eligibility rules, coverage, lead time, contact, call script and caveat.
 - **`eligibility.ts`** screens for care and coverage from household size and income (2026 poverty guidelines), with Kansas and Missouri rules and local resources for Lawrence and Kansas City.
+- **`assistant.ts`** answers questions from the plan, catches medical and emergency questions first, and builds the plan summary Claude gets when a key is added.
 - **`flags.ts`** reviews the finished plan for risks (uncovered hours, medicines, falls, missed visits, caregiver load, money) and marks each one handled as tasks get done.
 - **`share.ts`** packs the plan into a compressed link.
 
@@ -183,8 +198,9 @@ The repo includes a GitHub Actions workflow that tests, builds and publishes to 
 ```
 src/
   engine/        planning engine (no React), with tests
-  components/    Start, Intake, PlanView (tabs), Home, HeadsUpList, Runway, Ledger, WhoPays,
-                 CareCoverage, CrewCards, Providers, Fridge
+  components/    Start, Intake, PlanView (tabs), Home, Assistant, HeadsUpList, Runway, Ledger,
+                 WhoPays, CareCoverage, CrewCards, Providers, Fridge
+  ui/claude.ts   streams answers from the Claude API straight from the browser (optional)
   ui/            formatting, messages, view helpers
   styles/        one stylesheet (always light; dark tokens kept for a future toggle)
 docs/            pitch script, decision rules, brand kit, screenshots
@@ -196,6 +212,7 @@ docs/            pitch script, decision rules, brand kit, screenshots
 - **The decoder is rule-based**, tuned for common English discharge phrasing. Next step is an LLM second pass under the same citation rule: any need it suggests has to quote a line from the papers or it's dropped.
 - **Costs are Kansas City area estimates.** The scripts ask the questions that confirm real prices, and "maybe" help is never counted in the totals.
 - **Provider cards are sample listings.** In production they'd come from state license records, and the "can start in time" check would use real availability.
+- **The built-in Ask answers match keywords.** Anything outside the plan needs a Claude key. A small hosted proxy would let every visitor use Claude without bringing a key, at the cost of running a server.
 - **Sharing is a snapshot link**, not live sync. Optional end-to-end encrypted sync would let helpers check off tasks for everyone.
 - **Best time to start is admission, not discharge.** A hospital case manager could start the plan on day one, which unlocks more benefits.
 

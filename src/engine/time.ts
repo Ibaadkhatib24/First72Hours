@@ -117,3 +117,11 @@ export function fmtHourMark(h: number): string {
   if (h < 0) return `${Math.round(-h)}h before discharge`;
   return `Hour ${Math.round(h)}`;
 }
+
+/** Nobody should be told to call at 2am: move overnight deadlines back to 9pm the evening before. */
+export function niceDeadline(h: number, t0: Date) {
+  const clock = (((t0.getHours() + t0.getMinutes() / 60 + h) % 24) + 24) % 24;
+  if (clock >= 21.5) return h - (clock - 21);
+  if (clock < 7) return h - (clock + 3);
+  return h;
+}

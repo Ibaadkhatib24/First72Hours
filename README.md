@@ -1,3 +1,5 @@
+![First72: Discharge papers list what Mom can't do. First72 works out who will, when, and what's free, even without insurance.](docs/brand/first72-banner-hero-1920x640.png)
+
 # First72
 
 **Discharge papers list what Mom can't do. First72 works out who will, when, and what's free or cheap, even without insurance, for the first 72 hours home.**
@@ -121,7 +123,7 @@ All of it lives in `src/engine`, as plain TypeScript with no UI dependencies, an
 - **`eligibility.ts`** screens for care and coverage from household size and income (2026 poverty guidelines), with Kansas and Missouri rules and local resources for Lawrence and Kansas City.
 - **`share.ts`** packs the plan into a compressed link.
 
-More detail on the rules and numbers is in [docs/HOW-IT-DECIDES.md](docs/HOW-IT-DECIDES.md). The demo script for judging is in [docs/PITCH.md](docs/PITCH.md).
+More detail on the rules and numbers is in [docs/HOW-IT-DECIDES.md](docs/HOW-IT-DECIDES.md). The demo script for judging is in [docs/PITCH.md](docs/PITCH.md). The palette, type, logo and banners are in [docs/BRAND.md](docs/BRAND.md).
 
 ## Run it
 
@@ -146,7 +148,7 @@ src/
   components/    Start, Intake, PlanView, Runway, Ledger, WhoPays, CrewCards, Providers, Fridge
   ui/            formatting, messages, view helpers
   styles/        one stylesheet with light and dark tokens
-docs/            pitch script, decision rules, screenshots
+docs/            pitch script, decision rules, brand kit, screenshots
 ```
 
 ## Honest limits and what's next
